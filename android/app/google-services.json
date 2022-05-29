@@ -29,6 +29,13 @@
             {
               "client_id": "538044323734-krli6fga353s6fm8b03o1q9h25k4u0hh.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "538044323734-t48mm0nhrgr7el1vo1glik9disq9rmhr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.hanjukukobo.walkingAnalysis"
+              }
             }
           ]
         }
