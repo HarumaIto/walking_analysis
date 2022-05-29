@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "538044323734",
+    "project_id": "hk-gait-analysis-app",
+    "storage_bucket": "hk-gait-analysis-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:538044323734:android:9f80bcb0388cb1b114efb7",
+        "android_client_info": {
+          "package_name": "com.hanjukukobo.walking_analysis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "538044323734-krli6fga353s6fm8b03o1q9h25k4u0hh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD32_3qkFfw81719TW51ZE_gYFvVjLK8LY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "538044323734-krli6fga353s6fm8b03o1q9h25k4u0hh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
