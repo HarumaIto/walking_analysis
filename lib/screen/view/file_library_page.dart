@@ -94,7 +94,8 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ファイル操作', style: TextStyle(color: Colors.black87)),
+        title: const Text('ファイル操作'),
+        centerTitle: true,
         actions: [
           PopupMenuButton<String>(
             onSelected: (s) {

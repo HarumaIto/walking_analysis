@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walking_analysis/screen/user_setting_page.dart';
 
 import '../../repository/restart_repository.dart';
 import '../../state/home_providers.dart';
@@ -18,14 +19,23 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ホーム', style: TextStyle(color: Colors.black87)),
+        title: const Text('ホーム'),
+        centerTitle: true,
         actions: [
           IconButton(
             onPressed: buttonState
                 ? () => RestartRepository().restart(ref)
                 : null,
-            icon: const Icon(Icons.restart_alt_outlined, color: Colors.orange),
+            icon: const Icon(Icons.restart_alt_outlined),
           ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => UserSettingPage())
+              );
+            },
+            icon: const Icon(Icons.settings)
+          )
         ],
       ),
       body: SingleChildScrollView(

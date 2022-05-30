@@ -6,7 +6,6 @@ import '../model/configs/page_list.dart';
 import '../model/configs/static_var.dart';
 import '../state/home_providers.dart';
 import '../utility/file_processor.dart';
-import '../widget/bottom_navigation_bar.dart';
 
 class MyMainPage extends ConsumerStatefulWidget {
   const MyMainPage({Key? key}) : super(key: key);

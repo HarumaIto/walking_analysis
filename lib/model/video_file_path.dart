@@ -6,12 +6,6 @@ class VideoFilePath {
   static String mlInputPath = '';
   static String mlOutputPath = '';
 
-  VideoFilePath();
-
-  VideoFilePath.setup() {
-    setupPath();
-  }
-
   void setupPath() async {
     trInputPath = (await getExternalStorageDirectory())!.path + '/select.mp4';
     mlInputPath = (await getExternalStorageDirectory())!.path + '/input.mp4';

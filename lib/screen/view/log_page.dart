@@ -27,7 +27,8 @@ class LogPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('アプリログ', style: TextStyle(color: Colors.black87)),
+        title: const Text('アプリログ'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(

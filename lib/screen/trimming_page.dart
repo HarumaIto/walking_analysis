@@ -136,7 +136,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
         finishedDialog(context);
       });
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) =>  const MyMainPage())
+          context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
       );
     }).catchError((error) {
       print('Error');
@@ -182,7 +182,8 @@ class _TrimmingPageState extends State<TrimmingPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trimming', style: TextStyle(color: Colors.black87),)
+        title: const Text('トリミング'),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: Container(
