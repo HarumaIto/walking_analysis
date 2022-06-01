@@ -26,6 +26,7 @@ class MlViewModel extends ConsumerWidget {
         SizedBox(
           width: width / 1.7,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -42,30 +43,7 @@ class MlViewModel extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8,),
-              Row(
-                children: [
-                  PopupMenuButton<String> (
-                    child: const Icon(Icons.more_horiz),
-                    onSelected: (String s) {
-                      if (s == mlDescriptionText[0]) {
-                        ref.read(useModelProvider.notifier).state = 0;
-                      } else if (s == mlDescriptionText[1]) {
-                        ref.read(useModelProvider.notifier).state = 1;
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return mlDescriptionText.map((String s) {
-                        return PopupMenuItem(
-                          value: s,
-                          child: Text(s),
-                        );
-                      }).toList();
-                    },
-                  ),
-                  const Spacer(),
-                  Text('$selectedVal : $percentProgress%', style: const TextStyle(fontSize: 14),),
-                ],
-              )
+              Text('$selectedVal : $percentProgress%', style: const TextStyle(fontSize: 14),),
             ],
           ),
         ),
