@@ -8,8 +8,6 @@ import '../utility/calculation.dart';
 class ResultViewModel extends ConsumerWidget {
   ResultViewModel({Key? key}) : super(key: key);
 
-  String coincidentRatio = '---';
-
   void processResult(List list, WidgetRef ref) {
     // データ取得
     List dataList = dataExtraction(list);
@@ -26,11 +24,9 @@ class ResultViewModel extends ConsumerWidget {
     if (ccResult.isNaN) {
       // Not a Number の場合
       score = '0';
-      coincidentRatio = '0';
     } else {
       // 通常
       score = (ccResult * 100).round().toString();
-      coincidentRatio = ccResult.toString();
     }
 
     /*
@@ -59,32 +55,12 @@ class ResultViewModel extends ConsumerWidget {
     List dataList = ref.watch(dataListProvider).dataList;
     if (dataList.isNotEmpty && score == '-----') processResult(dataList, ref);
 
-    return Container(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              const Text('スコア', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(score)
-            ],
-          ),
-          ExpansionTile(
-            title: const Text('詳細', style: TextStyle(fontSize: 14)),
-            textColor: Colors.black87,
-            iconColor: const Color(0xffeece01),
-            children: <Widget> [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text('一致率'),
-                  Text(coincidentRatio)
-                ],
-              )
-            ],
-          )
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        const Text('スコア', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(score)
+      ],
     );
   }
 }

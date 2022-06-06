@@ -79,10 +79,12 @@ class UserSettingPageState extends ConsumerState<UserSettingPage> {
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('使用する機械学習モデルを選択'),
+                  const Text('使用する機械学習モデルを選択', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),),
                   RadioListTile(
                     title: Text(mlDescriptionText[0]),
+                    controlAffinity: ListTileControlAffinity.trailing,
                     value: MlModels.movenetThunder.name,
                     groupValue: useModel,
                     onChanged: (value) {
@@ -92,6 +94,7 @@ class UserSettingPageState extends ConsumerState<UserSettingPage> {
                   ),
                   RadioListTile(
                     title: Text(mlDescriptionText[1]),
+                    controlAffinity: ListTileControlAffinity.trailing,
                     value: MlModels.movenetLightning.name,
                     groupValue: useModel,
                     onChanged: (value) {
