@@ -1,15 +1,12 @@
 package com.hanjukukobo.walking_analysis
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Rect
+import android.graphics.*
+import androidx.core.graphics.createBitmap
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
 import java.lang.Math.*
-import java.nio.ByteBuffer
 import kotlin.math.roundToInt
 
 class MainActivity: FlutterActivity() {
@@ -36,8 +33,8 @@ class MainActivity: FlutterActivity() {
                     moveNet = MoveNet.create(this, model as Int)
                 }
                 METHOD_PROCESS -> {
-                    val byteArray = methodCall.argument<ByteArray>("image")
-                    val map = processImage(byteArray!!)
+                    val byteArray = methodCall.arguments as ByteArray
+                    val map = processImage(byteArray)
                     result.success(map)
                 }
                 METHOD_CLOSE -> {
@@ -49,38 +46,44 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun processImage(bytes: ByteArray): HashMap<String, Any> {
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        val bitmap: Bitmap? = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
         val persons = mutableListOf<Person>()
         val angleList = mutableListOf<Int>()
 
-        moveNet!!.estimatePoses(bitmap).let {
-            persons.addAll(it)
+        if (bitmap != null) {
+            moveNet!!.estimatePoses(bitmap).let {
+                persons.addAll(it)
 
-            val person = persons[0]
-            val leftHip = person.keyPoints[BodyPart.LEFT_HIP.position]
-            val leftKnee = person.keyPoints[BodyPart.LEFT_KNEE.position]
-            val leftAnkle = person.keyPoints[BodyPart.LEFT_ANKLE.position]
-            val rightHip = person.keyPoints[BodyPart.RIGHT_HIP.position]
-            val rightKnee = person.keyPoints[BodyPart.RIGHT_KNEE.position]
-            val rightAnkle = person.keyPoints[BodyPart.RIGHT_ANKLE.position]
+                val person = persons[0]
+                val leftHip = person.keyPoints[BodyPart.LEFT_HIP.position]
+                val leftKnee = person.keyPoints[BodyPart.LEFT_KNEE.position]
+                val leftAnkle = person.keyPoints[BodyPart.LEFT_ANKLE.position]
+                val rightHip = person.keyPoints[BodyPart.RIGHT_HIP.position]
+                val rightKnee = person.keyPoints[BodyPart.RIGHT_KNEE.position]
+                val rightAnkle = person.keyPoints[BodyPart.RIGHT_ANKLE.position]
 
-            val leftKneeAngle = getArticularAngle(leftHip, leftKnee, leftAnkle)
-            val rightKneeAngle = getArticularAngle(rightHip, rightKnee, rightAnkle)
+                val leftKneeAngle = getArticularAngle(leftHip, leftKnee, leftAnkle)
+                val rightKneeAngle = getArticularAngle(rightHip, rightKnee, rightAnkle)
 
-            angleList.add(leftKneeAngle)
-            angleList.add(rightKneeAngle)
-        }
+                angleList.add(leftKneeAngle)
+                angleList.add(rightKneeAngle)
+            }
 
-        val outputBitmap = visualize(persons, bitmap)
 
-        val baos = ByteArrayOutputStream()
-        outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-        val outputBytes: ByteArray = baos.toByteArray()
+            val outputBitmap = visualize(persons, bitmap)
 
-        return hashMapOf(
+            val baos = ByteArrayOutputStream()
+            outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+            val outputBytes: ByteArray = baos.toByteArray()
+
+            return hashMapOf(
                 "angleList" to angleList,
-                "image" to outputBytes)
+                "image" to outputBytes
+            )
+        } else {
+            return hashMapOf()
+        }
     }
 
     private fun visualize(persons: List<Person>, bitmap: Bitmap) : Bitmap {

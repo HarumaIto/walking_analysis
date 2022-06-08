@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../utility/file_processor.dart';
@@ -13,7 +14,5 @@ class StaticVar {
 
   static WidgetRef? globalRef;
 
-  void setComparisonData() async {
-    comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
-  }
+  static List<CameraDescription>? cameras;
 }

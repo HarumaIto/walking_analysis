@@ -46,9 +46,9 @@ class MyMainPageState extends ConsumerState<MyMainPage> {
           selectedIndex: selectedIndex,
           destinations: const <Widget>[
             NavigationDestination(
-              selectedIcon: Icon(Icons.video_library),
-              icon: Icon(Icons.video_library_outlined,),
-              label: 'アプリログ',
+              selectedIcon: Icon(Icons.photo_camera_front),
+              icon: Icon(Icons.photo_camera_front_outlined),
+              label: 'プレビュー'
             ),
             NavigationDestination(
               selectedIcon: Icon(Icons.home),

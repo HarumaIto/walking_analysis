@@ -51,10 +51,7 @@ class MlRepository {
       for (String imagePath in pathNameList) {
         // ネイティブから関節角度を取得
         Uint8List imageBytes = File(imagePath).readAsBytesSync();
-        final Map params = <String, dynamic> {
-          'image': imageBytes,
-        };
-        Map map = await channel.invokeMethod('process', params);
+        Map map = await channel.invokeMethod('process', imageBytes);
         final List angleList = map['angleList'];
 
         // データなければ0を入れる
