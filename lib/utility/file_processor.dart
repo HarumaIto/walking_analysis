@@ -3,8 +3,11 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
+
+import '../state/file_library_provider.dart';
 
 /// 一時ディレクトリへのパス
 Future<String> getTemporaryDirectoryPath() async {
@@ -23,6 +26,20 @@ void deleteCache() async {
   // ディレクトリ削除
   String dirPath = await getTemporaryDirectoryPath();
   Directory(dirPath).deleteSync(recursive: true);
+}
+
+/// ディレクトリからファイルを取得する
+void getFileList(WidgetRef ref, Directory dir) async {
+  List<String> list = getOriginalFileNameList(dir);
+
+  // プログラム用のファイルを削除
+  list.remove('select.mp4');
+  list.remove('input.mp4');
+  list.remove('output.mp4');
+
+  // 並べ替えてproviderにセット
+  list.sort((a, b) => a.compareTo(b));
+  ref.read(fileListProvider.notifier).setList(list);
 }
 
 /// 拡張子を取得

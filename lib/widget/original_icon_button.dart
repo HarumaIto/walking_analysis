@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class OriginalIconButton extends StatelessWidget {
   final Widget text;
-  final bool isRow;
   final Function()? onPressed;
   final IconData icon;
 
@@ -10,7 +9,6 @@ class OriginalIconButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.text,
-    required this.isRow,
   });
 
   @override
@@ -26,8 +24,6 @@ class OriginalIconButton extends StatelessWidget {
       text,
     ];
 
-    return isRow
-      ? Row(children: _children,)
-      : Column(children: _children,);
+    return Column(children: _children,);
   }
 }

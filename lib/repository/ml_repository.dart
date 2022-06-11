@@ -12,8 +12,6 @@ import '../model/configs/static_var.dart';
 import '../model/images_info.dart';
 import '../model/video_file_path.dart';
 import '../state/home_providers.dart';
-import '../state/log_provider.dart';
-import '../utility/create_thumbnail.dart';
 import '../utility/file_processor.dart';
 import '../utility/video_to_image.dart';
 
@@ -91,7 +89,6 @@ class MlRepository {
     // 動画出力
     final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
     await flutterFFmpeg.execute("-y -i $inputPath -vcodec mpeg4 -b:v 10000k -vframes $frameNum $outputVideoPath");
-    createThumbnail(ref, detectedThumbProvider, outputVideoPath);
 
     // csvファイルを作成
     String dirPath = await getExternalStoragePath();

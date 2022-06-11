@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:walking_analysis/model/video_file_path.dart';
 
 import '../../model/angle_data.dart';
 import '../../model/configs/static_var.dart';
@@ -26,15 +27,8 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   List nameList = [];
   List csvDataList = [];
   String fileName = '';
-  late VideoPlayerController controller;
-
-  // ディレクトリからファイルを取得する
-  void _getFiles() async {
-    dir = (await getExternalStorageDirectory())!;
-    List<String> list = getOriginalFileNameList(dir);
-    list.sort((a, b) => a.compareTo(b));
-    ref.read(fileListProvider.notifier).setList(list);
-  }
+  late VideoPlayerController previewController;
+  late VideoPlayerController outputController;
 
   // ファイルがあるかチェックする
   bool _fileExist() {
@@ -68,9 +62,9 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   }
 
   // 動画を表示するWidgetを作成する
-  VideoPlayerController _createVideoController() {
-    File file = File(StaticVar.previewFilePath);
-    controller = VideoPlayerController.file(file)
+  VideoPlayerController _createVideoController(String filePath) {
+    File file = File(filePath);
+    VideoPlayerController controller = VideoPlayerController.file(file)
       ..initialize().then((_) {})
       ..play();
 
@@ -80,7 +74,10 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   @override
   void initState() {
     super.initState();
-    _getFiles();
+    getExternalStorageDirectory().then((directory) {
+      dir = directory!;
+      getFileList(ref, dir);
+    });
   }
 
   @override
@@ -100,7 +97,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
           PopupMenuButton<String>(
             onSelected: (s) {
               if (s=='リスト更新') {
-                _getFiles();
+                getFileList(ref, dir);
               }
               else {
                 deleteCache();
@@ -156,7 +153,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                           )
                               : Container(
                             alignment: Alignment.center,
-                            child: Text('アプリで作成されたファイルがありません'),
+                            child: const Text('アプリで作成されたファイルがありません'),
                           )
                       ),
                     ],
@@ -202,7 +199,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                                     width: imageHeight / 1.7,
                                     padding: const EdgeInsets.symmetric(vertical: 4),
                                     alignment: Alignment.center,
-                                    child: VideoPlayer(_createVideoController())
+                                    child: VideoPlayer(previewController = _createVideoController(StaticVar.previewFilePath))
                                 ),
                                 Row(
                                   children: [
@@ -212,7 +209,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                                             borderRadius: BorderRadius.circular(24)
                                         ),
                                         child: IconButton(
-                                          onPressed: () {controller.play();},
+                                          onPressed: () {previewController.play();},
                                           icon: const Icon(Icons.restart_alt),
                                         )
                                     ),
@@ -222,6 +219,38 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                             )
                       ],
                     ),
+                  )
+              ),
+              CardTemplate(
+                  title: '前回の実行後の動画',
+                  child: File(VideoFilePath.mlOutputPath).existsSync() ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                          height: imageHeight,
+                          width: imageHeight / 1.7,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          alignment: Alignment.center,
+                          child: VideoPlayer(outputController = _createVideoController(VideoFilePath.mlOutputPath))
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                              decoration: BoxDecoration(
+                                  color: const Color(0x88eece01),
+                                  borderRadius: BorderRadius.circular(24)
+                              ),
+                              child: IconButton(
+                                onPressed: () {outputController.play();},
+                                icon: const Icon(Icons.restart_alt),
+                              )
+                          ),
+                        ],
+                      )
+                    ],
+                  ) : Container(
+                    alignment: Alignment.center,
+                    child: const Text('アプリで作成されたファイルがありません'),
                   )
               ),
               const SizedBox(height: 8,),

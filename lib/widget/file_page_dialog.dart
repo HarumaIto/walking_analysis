@@ -39,7 +39,7 @@ class FileHandlingDialog extends StatelessWidget {
   // ファイル削除
   void _onDelete() {
     File(filePath).deleteSync(recursive: true);
-    _reloadFileList();
+    getFileList(ref, dir);
   }
 
   // ファイル名変更
@@ -47,13 +47,7 @@ class FileHandlingDialog extends StatelessWidget {
     String newFilePath = '$dirPath/$inputText.csv';
     File(filePath).copySync(newFilePath);
     _onDelete();
-    _reloadFileList();
-  }
-
-  void _reloadFileList() {
-    List list = getOriginalFileNameList(dir);
-    list.sort((a, b) => a.compareTo(b));
-    ref.read(fileListProvider.notifier).setList(list);
+    getFileList(ref, dir);
   }
 
   @override

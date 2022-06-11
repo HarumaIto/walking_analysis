@@ -12,7 +12,6 @@ import '../screen/introduction/explain_condition.dart';
 import '../screen/main_page.dart';
 import '../screen/trimming_page.dart';
 import '../state/home_providers.dart';
-import '../state/log_provider.dart';
 import '../utility/create_thumbnail.dart';
 import '../widget/original_icon_button.dart';
 
@@ -98,15 +97,16 @@ class PrepareViewModel extends ConsumerWidget {
   }
 
   // 保存されたサムネイルがあれば返す
-  Uint8List? getImage(ThumbModel thumbModel) {
+  Uint8List? getImage(InputThumbModel thumbModel) {
     if (thumbModel.isState()) {
       return thumbModel.bytes;
     }
+    return null;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final _prepareState = ref.watch(prepareStateProvider);
+    final prepareState = ref.watch(prepareStateProvider);
     Uint8List? inputBytes = getImage(ref.watch(inputThumbProvider));
     double imageHeight = StaticVar.screenHeight / 7;
 
@@ -130,7 +130,7 @@ class PrepareViewModel extends ConsumerWidget {
           children: <Widget>[
             OriginalIconButton(
               icon: Icons.camera_alt_outlined,
-              onPressed: _prepareState ? () {
+              onPressed: prepareState ? () {
                 PermissionRequest(
                   request: Permissions.camera,
                   callback: (granted) {
@@ -148,7 +148,7 @@ class PrepareViewModel extends ConsumerWidget {
             const SizedBox(width: 8,),
             OriginalIconButton(
               icon: Icons.folder_outlined,
-              onPressed: _prepareState ? () {
+              onPressed: prepareState ? () {
                 PermissionRequest(
                   request: Permissions.storage,
                   callback: (granted) {
