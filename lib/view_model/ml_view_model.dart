@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walking_analysis/model/configs/ml_mode_list.dart';
+import 'package:walking_analysis/model/ml_mode_list.dart';
 
-import '../model/configs/static_var.dart';
+import '../model/global_variable.dart';
 import '../repository/ml_repository.dart';
 import '../state/home_providers.dart';
 import '../widget/original_icon_button.dart';
@@ -18,7 +18,7 @@ class MlViewModel extends ConsumerWidget {
     final isDeterminate = ref.watch(progressValProvider).isDeterminate;
     final percentProgress = (ref.watch(progressValProvider).value * 100).round();
 
-    double width = StaticVar.screenWidth;
+    double width = GlobalVar.screenWidth;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

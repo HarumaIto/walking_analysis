@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 
-import '../../model/configs/static_var.dart';
+import '../../model/global_variable.dart';
 import '../../state/introduction_provider.dart';
 import '../main_page.dart';
 
@@ -74,7 +74,7 @@ class IntroductionState extends State<IntroductionPage> {
             MaterialPageRoute(
               builder: (_) => const MyMainPage(),
             ), (_) => false);
-        StaticVar.globalRef!.read(introductionProvider.notifier).setIntro();
+        GlobalVar.globalRef!.read(introductionProvider.notifier).setIntro();
       },
       showSkipButton: true,
       skip: const Text(

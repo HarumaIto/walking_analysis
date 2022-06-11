@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 
-import '../../model/configs/static_var.dart';
+import '../../model/global_variable.dart';
 import '../../view_model/prepare_view_model.dart';
 
 class ExplainCondition extends StatefulWidget {
@@ -40,7 +40,7 @@ class ExplainConditionState extends State<ExplainCondition> {
                     title: '',
                     bodyWidget: Container(
                       alignment: Alignment.center,
-                      margin: EdgeInsets.only(top: StaticVar.screenHeight/3),
+                      margin: EdgeInsets.only(top: GlobalVar.screenHeight/3),
                       padding: const EdgeInsets.all(4),
                       child: const Text(
                         '使用できる動画について説明します',
@@ -111,7 +111,7 @@ class ExplainConditionState extends State<ExplainCondition> {
                           _oBodyText('・気をつけの状態から２歩歩く'),
                           _oBodyText('・再び気をつけの状態になれば終了する'),
                           Container(
-                            margin: EdgeInsets.only(top: StaticVar.screenHeight/5, left: 20, right: 20),
+                            margin: EdgeInsets.only(top: GlobalVar.screenHeight/5, left: 20, right: 20),
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                                 border: Border.all(color: Colors.black, width: 2),

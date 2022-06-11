@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../model/configs/static_var.dart';
+import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
 import '../repository/permission_repository.dart';
 import '../screen/introduction/explain_condition.dart';
@@ -108,7 +108,7 @@ class PrepareViewModel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prepareState = ref.watch(prepareStateProvider);
     Uint8List? inputBytes = getImage(ref.watch(inputThumbProvider));
-    double imageHeight = StaticVar.screenHeight / 7;
+    double imageHeight = GlobalVar.screenHeight / 7;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,

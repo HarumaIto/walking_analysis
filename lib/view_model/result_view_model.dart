@@ -9,19 +9,21 @@ import 'package:walking_analysis/widget/original_icon_button.dart';
 
 import 'package:intl/intl.dart' as intl;
 
-import '../model/configs/preference_keys.dart';
-import '../model/configs/static_var.dart';
+import '../model/preference_keys.dart';
+import '../model/global_variable.dart';
 import '../repository/sharedpref_repository.dart';
 import '../state/home_providers.dart';
 import '../utility/calculation.dart';
 
 class ResultViewModel extends ConsumerWidget {
-  const ResultViewModel({Key? key}) : super(key: key);
+  ResultViewModel({Key? key}) : super(key: key);
+
+  late bool saveVideoState;
 
   void processResult(List list, WidgetRef ref) {
     // データ取得
     List dataList = dataExtraction(list);
-    List compDataList = dataExtraction(StaticVar.comparisonData);
+    List compDataList = dataExtraction(GlobalVar.comparisonData);
 
     // データ量の少ない方を調整をする
     dataList.length < compDataList.length
@@ -63,6 +65,7 @@ class ResultViewModel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     String score = ref.watch(scoreProvider);
     List dataList = ref.watch(dataListProvider).dataList;
+    saveVideoState = ref.watch(saveVideoStateProvider);
     if (dataList.isNotEmpty && score == '-----') processResult(dataList, ref);
 
     return Row(
@@ -72,7 +75,7 @@ class ResultViewModel extends ConsumerWidget {
         Text(score),
         OriginalIconButton(
           icon: Icons.save_alt,
-          onPressed: UserSettingPreference().prefs!.getBool(PreferenceKeys.isSaveVideo.name)! && StaticVar.videoSaveState
+          onPressed: UserSettingPreference().prefs!.getBool(PreferenceKeys.isSaveVideo.name)! && saveVideoState
               ? () => saveVideoDialog(context)
               : null,
           text: const Text('動画を保存'),
@@ -110,7 +113,7 @@ class ResultViewModel extends ConsumerWidget {
                 String filePath = '$dirPath/$newFileName.mp4';
                 File(VideoFilePath.mlOutputPath)
                     .copy(filePath)
-                    .then((value) => StaticVar.videoSaveState = false);
+                    .then((value) => saveVideoState = false);
               } else {
                 showDialog(context: context, builder: (context) {
                   return AlertDialog(

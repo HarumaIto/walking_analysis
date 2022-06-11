@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'model/configs/static_var.dart';
+import 'model/global_variable.dart';
 import 'screen/introduction/introduction_page.dart';
 import 'screen/main_page.dart';
 import 'state/introduction_provider.dart';
@@ -19,7 +19,7 @@ class MyApp extends ConsumerWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    StaticVar.globalRef = ref;
+    GlobalVar.globalRef = ref;
 
     ref.read(introductionProvider.notifier).getPrefIntro();
     final intro = ref.watch(introductionProvider).intro;

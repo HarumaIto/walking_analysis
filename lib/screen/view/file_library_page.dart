@@ -8,7 +8,7 @@ import 'package:video_player/video_player.dart';
 import 'package:walking_analysis/model/video_file_path.dart';
 
 import '../../model/angle_data.dart';
-import '../../model/configs/static_var.dart';
+import '../../model/global_variable.dart';
 import '../../state/file_library_provider.dart';
 import '../../utility/chart_util.dart';
 import '../../utility/file_processor.dart';
@@ -32,7 +32,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
 
   // ファイルがあるかチェックする
   bool _fileExist() {
-    String displayedFilePath = cuttingNameFromPath(StaticVar.previewFilePath);
+    String displayedFilePath = cuttingNameFromPath(GlobalVar.previewFilePath);
     if (displayedFilePath.isNotEmpty) {
       List list = ref.read(fileListProvider).fileNameList;
       for (String name in list) {
@@ -43,13 +43,13 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
     }
 
     // ファイルがなかったか変数が空の場合は変数をリセット
-    StaticVar.previewFilePath = '';
+    GlobalVar.previewFilePath = '';
     return false;
   }
 
   // チャートを作成する
   List<chart.Series<AngleData, int>> _createDataList() {
-    List<AngleData> dataList = dataExtraction(getDataForFileCSV(StaticVar.previewFilePath), 0);
+    List<AngleData> dataList = dataExtraction(getDataForFileCSV(GlobalVar.previewFilePath), 0);
 
     return [
       chart.Series<AngleData, int>(
@@ -85,7 +85,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
     final fileList = ref.watch(fileListProvider).fileNameList;
     final fileExtension = ref.watch(previewProvider).fileExtension;
 
-    double imageHeight = StaticVar.screenHeight / 5;
+    double imageHeight = GlobalVar.screenHeight / 5;
 
     var usText = ["リスト更新", "キャッシュ削除"];
 
@@ -199,7 +199,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                                     width: imageHeight / 1.7,
                                     padding: const EdgeInsets.symmetric(vertical: 4),
                                     alignment: Alignment.center,
-                                    child: VideoPlayer(previewController = _createVideoController(StaticVar.previewFilePath))
+                                    child: VideoPlayer(previewController = _createVideoController(GlobalVar.previewFilePath))
                                 ),
                                 Row(
                                   children: [

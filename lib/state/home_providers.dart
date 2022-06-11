@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walking_analysis/model/configs/ml_mode_list.dart';
-import 'package:walking_analysis/model/configs/preference_keys.dart';
+import 'package:walking_analysis/model/ml_mode_list.dart';
+import 'package:walking_analysis/model/preference_keys.dart';
 import 'package:walking_analysis/repository/sharedpref_repository.dart';
 
 // ボタン用
@@ -12,6 +12,8 @@ final prepareStateProvider = StateProvider((_) => true);
 final processStateProvider = StateProvider((_) => false);
 
 final restartStateProvider = StateProvider((_) => true);
+
+final saveVideoStateProvider = StateProvider((_) => false);
 
 // BottomNavigationBar用
 final selectedIndexProvider = StateProvider((_) => 1);

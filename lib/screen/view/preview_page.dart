@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:walking_analysis/model/global_variable.dart';
 
 import 'dart:math' as math;
 
@@ -78,14 +79,14 @@ class PreviewPageState extends State<PreviewPage> {
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            var tmp = MediaQuery.of(context).size;
-            var screenH = math.max(tmp.height, tmp.width);
-            var screenW = math.min(tmp.height, tmp.width);
+            Size tmp = Size(GlobalVar.screenWidth, GlobalVar.screenHeight);
+            double screenH = math.max(tmp.height, tmp.width);
+            double screenW = math.min(tmp.height, tmp.width);
             tmp = _controller!.value.previewSize!;
-            var previewH = math.max(tmp.height, tmp.width);
-            var previewW = math.min(tmp.height, tmp.width);
-            var screenRatio = screenH / screenW;
-            var previewRatio = previewH / previewW;
+            double previewH = math.max(tmp.height, tmp.width);
+            double previewW = math.min(tmp.height, tmp.width);
+            double screenRatio = screenH / screenW;
+            double previewRatio = previewH / previewW;
 
             return Stack(
               fit: StackFit.expand,

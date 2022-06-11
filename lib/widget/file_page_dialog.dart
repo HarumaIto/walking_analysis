@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../model/configs/static_var.dart';
+import '../model/global_variable.dart';
 import '../state/file_library_provider.dart';
 import '../utility/file_processor.dart';
 
 class FileHandlingDialog extends StatelessWidget {
-  WidgetRef ref = StaticVar.globalRef!;
+  WidgetRef ref = GlobalVar.globalRef!;
 
   final Directory dir;
   String filePath = '';
@@ -27,7 +27,7 @@ class FileHandlingDialog extends StatelessWidget {
     // 拡張子を取得
     String extension = getExtension(fileName);
 
-    StaticVar.previewFilePath = filePath;
+    GlobalVar.previewFilePath = filePath;
 
     if (extension == 'csv') {
       ref.read(previewProvider.notifier).setFileExtension(PreviewModel.CSV_EXTENSION);

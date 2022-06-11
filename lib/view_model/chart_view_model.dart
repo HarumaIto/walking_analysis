@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/angle_data.dart';
-import '../model/configs/static_var.dart';
+import '../model/global_variable.dart';
 import '../state/home_providers.dart';
 import '../utility/chart_util.dart';
 
@@ -14,7 +14,7 @@ class ChartViewModel extends ConsumerWidget {
 
   // chartで使えるようにデータ変換
   List<chart.Series<AngleData, int>> _createDataList(List list) {
-    List<AngleData> compDataList = dataExtraction(StaticVar.comparisonData, 0);
+    List<AngleData> compDataList = dataExtraction(GlobalVar.comparisonData, 0);
     List<AngleData> dataList = dataExtraction(list, 0);
     
     return _createChart(compDataList, dataList);

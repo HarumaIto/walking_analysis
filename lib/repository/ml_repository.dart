@@ -8,7 +8,7 @@ import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' as intl;
 
-import '../model/configs/static_var.dart';
+import '../model/global_variable.dart';
 import '../model/images_info.dart';
 import '../model/video_file_path.dart';
 import '../state/home_providers.dart';
@@ -16,7 +16,7 @@ import '../utility/file_processor.dart';
 import '../utility/video_to_image.dart';
 
 class MlRepository {
-  final WidgetRef ref = StaticVar.globalRef!;
+  final WidgetRef ref = GlobalVar.globalRef!;
   final MethodChannel channel = const MethodChannel('com.hanjukukobo.walking_analysis/ml');
 
   MlRepository.start() {
@@ -99,7 +99,7 @@ class MlRepository {
     ref.read(dataListProvider.notifier).setValue(angleLists);
     ref.read(progressValProvider.notifier).setIsDeterminate(true);
     ref.read(restartStateProvider.notifier).state = true;
-    StaticVar.videoSaveState = true;
+    ref.read(saveVideoStateProvider.notifier).state = true;
   }
 
   // 元画像と機械学習の結果を合成して書き換える

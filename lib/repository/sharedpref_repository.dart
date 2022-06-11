@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walking_analysis/model/configs/preference_keys.dart';
+import 'package:walking_analysis/model/preference_keys.dart';
 
 class UserSettingPreference {
   // staticとしてインスタンスを事前に作成

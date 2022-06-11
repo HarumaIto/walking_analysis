@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:video_player/video_player.dart';
 
-import '../model/configs/static_var.dart';
+import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
 import '../widget/rangeslider.dart';
 import 'main_page.dart';
@@ -20,8 +20,8 @@ class TrimmingPage extends StatefulWidget {
 }
 
 class _TrimmingPageState extends State<TrimmingPage> {
-  double width = StaticVar.screenWidth;
-  double height = StaticVar.screenHeight;
+  double width = GlobalVar.screenWidth;
+  double height = GlobalVar.screenHeight;
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   TextEditingController timeBoxControllerStart = TextEditingController();
   TextEditingController timeBoxControllerEnd = TextEditingController();

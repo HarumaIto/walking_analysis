@@ -8,7 +8,7 @@ import 'package:walking_analysis/repository/sharedpref_repository.dart';
 import 'package:walking_analysis/utility/file_processor.dart';
 
 import 'app.dart';
-import 'model/configs/static_var.dart';
+import 'model/global_variable.dart';
 import 'model/video_file_path.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -30,7 +30,7 @@ void main() async{
   VideoFilePath.mlInputPath = '${(await getExternalStorageDirectory())!.path}/input.mp4';
   VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
   // 比較用データの設定
-  StaticVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
+  GlobalVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
   // ユーザー設定の初期化
   UserSettingPreference().prefs = await SharedPreferences.getInstance();
 

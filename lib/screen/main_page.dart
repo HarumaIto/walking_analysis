@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../model/configs/page_list.dart';
-import '../model/configs/static_var.dart';
+import '../model/page_list.dart';
+import '../model/global_variable.dart';
 import '../state/home_providers.dart';
 import '../utility/file_processor.dart';
 
@@ -32,8 +32,8 @@ class MyMainPageState extends ConsumerState<MyMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    StaticVar.screenWidth = MediaQuery.of(context).size.width;
-    StaticVar.screenHeight = MediaQuery.of(context).size.height;
+    GlobalVar.screenWidth = MediaQuery.of(context).size.width;
+    GlobalVar.screenHeight = MediaQuery.of(context).size.height;
     final selectedIndex = ref.watch(selectedIndexProvider);
 
     return Scaffold(

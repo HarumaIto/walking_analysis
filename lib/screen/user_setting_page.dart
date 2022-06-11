@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walking_analysis/model/configs/ml_mode_list.dart';
-import 'package:walking_analysis/model/configs/preference_keys.dart';
-import 'package:walking_analysis/model/configs/static_var.dart';
+import 'package:walking_analysis/model/ml_mode_list.dart';
+import 'package:walking_analysis/model/preference_keys.dart';
+import 'package:walking_analysis/model/global_variable.dart';
 import 'package:walking_analysis/repository/sharedpref_repository.dart';
 import 'package:walking_analysis/state/home_providers.dart';
 
@@ -34,9 +34,9 @@ class UserSettingPageState extends State<UserSettingPage> {
   // 使用する機械学習モデルをセットする
   void setUseModelProvider() {
     if (useModel == MlModels.movenetThunder.name) {
-      StaticVar.globalRef!.read(useModelProvider.notifier).state = 0;
+      GlobalVar.globalRef!.read(useModelProvider.notifier).state = 0;
     } else {
-      StaticVar.globalRef!.read(useModelProvider.notifier).state = 1;
+      GlobalVar.globalRef!.read(useModelProvider.notifier).state = 1;
     }
   }
 
