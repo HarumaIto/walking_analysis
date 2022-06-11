@@ -50,11 +50,10 @@ class MlViewModel extends ConsumerWidget {
         OriginalIconButton(
           icon: Icons.auto_awesome_outlined,
           onPressed: canProcess ? () {
-            MlRepository().createImages();
+            MlRepository.start();
             ref.read(processStateProvider.notifier).state = false;
           } : null,
           text: const Text('実行'),
-          isRow: false,
         )
       ],
     );

@@ -10,4 +10,6 @@ class StaticVar {
   static String previewFilePath = '';
 
   static WidgetRef? globalRef;
+
+  static bool videoSaveState = false;
 }

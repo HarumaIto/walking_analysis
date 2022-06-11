@@ -90,7 +90,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
 
     double imageHeight = StaticVar.screenHeight / 5;
 
-    var _usText = ["リスト更新", "キャッシュ削除"];
+    var usText = ["リスト更新", "キャッシュ削除"];
 
     return Scaffold(
       appBar: AppBar(
@@ -107,10 +107,10 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
               }
             },
             itemBuilder: (context) {
-              return _usText.map((s) {
+              return usText.map((s) {
                 return PopupMenuItem(
-                  child: Text(s),
                   value: s,
+                  child: Text(s),
                 );
               }).toList();
             },

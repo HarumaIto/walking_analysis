@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walking_analysis/repository/sharedpref_repository.dart';
 import 'package:walking_analysis/utility/file_processor.dart';
 
@@ -24,18 +25,19 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(
-    const ProviderScope(
-        child: MyApp(),
-    ),
-  );
-
   // pathの設定
-  VideoFilePath.trInputPath = '${(await getExternalStorageDirectory())!.path}/select.mp4';
+  VideoFilePath.trimmingInputPath = '${(await getExternalStorageDirectory())!.path}/select.mp4';
   VideoFilePath.mlInputPath = '${(await getExternalStorageDirectory())!.path}/input.mp4';
   VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
   // 比較用データの設定
   StaticVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
   // ユーザー設定の初期化
-  UserSettingPreference().initUserSetting();
+  UserSettingPreference().prefs = await SharedPreferences.getInstance();
+
+  // 最後にUIを構築
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }

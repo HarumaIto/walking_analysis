@@ -53,9 +53,9 @@ class PrepareViewModel extends ConsumerWidget {
               Navigator.pop(context);
               // File(対象).copy(コピー先)
               // トリミング用で複製する
-              File(xFile.path).copySync(VideoFilePath.trInputPath);
+              File(xFile.path).copySync(VideoFilePath.trimmingInputPath);
               // 機械学習用で複製する
-              File(VideoFilePath.trInputPath).copySync(VideoFilePath.mlInputPath);
+              File(xFile.path).copySync(VideoFilePath.mlInputPath);
               ref.read(prepareStateProvider.notifier).state = false;
               // ログ用のサムネイルを作成
               createThumbnail(ref, inputThumbProvider, xFile.path);
@@ -144,7 +144,6 @@ class PrepareViewModel extends ConsumerWidget {
                 );
               } : null,
               text: const Text('撮影'),
-              isRow: false,
             ),
             const SizedBox(width: 8,),
             OriginalIconButton(
@@ -162,7 +161,6 @@ class PrepareViewModel extends ConsumerWidget {
                 );
               } : null,
               text: const Text('選択'),
-              isRow: false,
             ),
           ],
         ),

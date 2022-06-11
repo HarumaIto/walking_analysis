@@ -24,14 +24,14 @@ class HomePage extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: buttonState
-                ? () => RestartRepository().restart(ref)
+                ? () => RestartRepository.restart(ref)
                 : null,
             icon: const Icon(Icons.restart_alt_outlined),
           ),
           IconButton(
             onPressed: () {
               Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => UserSettingPage())
+                  context, MaterialPageRoute(builder: (_) => const UserSettingPage())
               );
             },
             icon: const Icon(Icons.settings)

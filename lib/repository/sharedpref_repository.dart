@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:walking_analysis/model/configs/preference_keys.dart';
 
 class UserSettingPreference {
   // staticとしてインスタンスを事前に作成
@@ -10,13 +11,11 @@ class UserSettingPreference {
   // 内部で利用する別名コンストラクタ
   UserSettingPreference._internal();
 
-  late final SharedPreferences prefs;
+  SharedPreferences? prefs;
   bool? isSaveVideo = false;
 
   void initUserSetting() async {
-    prefs = await SharedPreferences.getInstance();
-
-    prefs.setBool('isSaveVideo', false);
-    prefs.setString('useModel', 'movenetThunder');
+    prefs!.setBool(PreferenceKeys.isSaveVideo.name, false);
+    prefs!.setString(PreferenceKeys.useModel.name, 'movenetThunder');
   }
 }

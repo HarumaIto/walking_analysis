@@ -21,6 +21,12 @@ class MlRepository {
   final WidgetRef ref = StaticVar.globalRef!;
   final MethodChannel channel = const MethodChannel('com.hanjukukobo.walking_analysis/ml');
 
+  MlRepository.start() {
+    createImages().then((pathNameList) {
+      _processImage(pathNameList);
+    });
+  }
+
   // 動画から連番画像生成
   Future createImages() async {
     ref.read(restartStateProvider.notifier).state = false;
@@ -30,13 +36,11 @@ class MlRepository {
     String localDirectoryPath = await getTemporaryDirectoryPath();
     final frameNum = await videoToImage.videoConfig();
     ImagesInfo.FRAME_NUM = frameNum;
-    List pathNameList = await videoToImage.convertImage(localDirectoryPath, frameNum);
-
-    _estimatePoses(pathNameList);
+    return await videoToImage.convertImage(localDirectoryPath, frameNum);
   }
 
   // 姿勢推定を実行
-  void _estimatePoses(List pathNameList) async {
+  void _processImage(List pathNameList) async {
     ref.read(progressValProvider.notifier).setIsDeterminate(true);
 
     // 機械学習処理を初期化
@@ -78,19 +82,18 @@ class MlRepository {
     channel.invokeMethod('close');
     ref.read(progressValProvider.notifier).setIsDeterminate(false);
 
-    final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
-
     String inputPath = ImagesInfo.IMAGES_PATH!;
     int frameNum = ImagesInfo.FRAME_NUM!;
     String outputVideoPath = VideoFilePath.mlOutputPath;
+    DateTime now = DateTime.now();
+    String formattedDate = intl.DateFormat('yyyy-MM-dd–hh-mm-ss').format(now);
 
-    await flutterFFmpeg
-        .execute("-y -i $inputPath -vcodec mpeg4 -b:v 10000k -vframes $frameNum $outputVideoPath")
-        .then((rc) => createThumbnail(ref, detectedThumbProvider, VideoFilePath.mlOutputPath));
+    // 動画出力
+    final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
+    await flutterFFmpeg.execute("-y -i $inputPath -vcodec mpeg4 -b:v 10000k -vframes $frameNum $outputVideoPath");
+    createThumbnail(ref, detectedThumbProvider, outputVideoPath);
 
     // csvファイルを作成
-    DateTime now = DateTime.now();
-    String formattedDate = intl.DateFormat('yyyy-MM-dd–kk-mm-ss').format(now);
     String dirPath = await getExternalStoragePath();
     String outputPath = "$dirPath/$formattedDate.csv";
     List<String> headerList = ['left knee', 'right knee'];
@@ -99,6 +102,7 @@ class MlRepository {
     ref.read(dataListProvider.notifier).setValue(angleLists);
     ref.read(progressValProvider.notifier).setIsDeterminate(true);
     ref.read(restartStateProvider.notifier).state = true;
+    StaticVar.videoSaveState = true;
   }
 
   // 元画像と機械学習の結果を合成して書き換える

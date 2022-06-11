@@ -1,38 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walking_analysis/model/configs/ml_mode_list.dart';
+import 'package:walking_analysis/model/configs/preference_keys.dart';
+import 'package:walking_analysis/model/configs/static_var.dart';
 import 'package:walking_analysis/repository/sharedpref_repository.dart';
 import 'package:walking_analysis/state/home_providers.dart';
 
-class UserSettingPage extends ConsumerStatefulWidget {
+class UserSettingPage extends StatefulWidget {
   const UserSettingPage({Key? key}) : super(key: key);
 
   @override
   UserSettingPageState createState () => UserSettingPageState();
 }
 
-class UserSettingPageState extends ConsumerState<UserSettingPage> {
-  final SharedPreferences prefs = UserSettingPreference().prefs;
+class UserSettingPageState extends State<UserSettingPage> {
+  final SharedPreferences prefs = UserSettingPreference().prefs!;
 
   bool? isSaveVideo;
   String? useModel;
 
+  // 保存してあるプリファレンスを取得
   void getPreference() {
-    isSaveVideo = prefs.getBool('isSaveVideo');
-    useModel = prefs.getString('useModel');
+    isSaveVideo = prefs.getBool(PreferenceKeys.isSaveVideo.name);
+    useModel = prefs.getString(PreferenceKeys.useModel.name);
   }
 
+  // 変更後のプリファレンスを保存
   void setPreference() async {
     await prefs.setBool('isSaveVideo', isSaveVideo!);
     await prefs.setString('useModel', useModel!);
   }
 
+  // 使用する機械学習モデルをセットする
   void setUseModelProvider() {
     if (useModel == MlModels.movenetThunder.name) {
-      ref.read(useModelProvider.notifier).state = 0;
+      StaticVar.globalRef!.read(useModelProvider.notifier).state = 0;
     } else {
-      ref.read(useModelProvider.notifier).state = 1;
+      StaticVar.globalRef!.read(useModelProvider.notifier).state = 1;
     }
   }
 
@@ -70,7 +74,11 @@ class UserSettingPageState extends ConsumerState<UserSettingPage> {
               child: SwitchListTile(
                 title: const Text('実行後の動画を保存する'),
                 value: isSaveVideo!,
-                onChanged: (value) => isSaveVideo = value,
+                onChanged: (value) {
+                  setState(() {
+                    isSaveVideo = value;
+                  }) ;
+                }
               ),
             ),
             Container(
@@ -88,7 +96,9 @@ class UserSettingPageState extends ConsumerState<UserSettingPage> {
                     value: MlModels.movenetThunder.name,
                     groupValue: useModel,
                     onChanged: (value) {
-                      useModel = value.toString();
+                      setState(() {
+                        useModel = value.toString();
+                      });
                       setUseModelProvider();
                     },
                   ),
@@ -98,7 +108,9 @@ class UserSettingPageState extends ConsumerState<UserSettingPage> {
                     value: MlModels.movenetLightning.name,
                     groupValue: useModel,
                     onChanged: (value) {
-                      useModel = value.toString();
+                      setState(() {
+                        useModel = value.toString();
+                      });
                       setUseModelProvider();
                     },
                   ),

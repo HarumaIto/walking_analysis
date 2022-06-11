@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walking_analysis/model/configs/ml_mode_list.dart';
 
 // ボタン用
 final prepareStateProvider = StateProvider((_) => true);
@@ -12,7 +11,7 @@ final restartStateProvider = StateProvider((_) => true);
 // BottomNavigationBar用
 final selectedIndexProvider = StateProvider((_) => 1);
 
-// モデル選択のpopupMenu用
+// モデル選択用
 final useModelProvider = StateProvider((_) => 0);
 
 // プログレスバー用

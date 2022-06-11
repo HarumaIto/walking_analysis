@@ -1,6 +1,6 @@
 class VideoFilePath {
 
-  static String trInputPath = '';
+  static String trimmingInputPath = '';
   static String mlInputPath = '';
   static String mlOutputPath = '';
 }

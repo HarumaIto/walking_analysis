@@ -25,6 +25,29 @@ void deleteCache() async {
   Directory(dirPath).deleteSync(recursive: true);
 }
 
+/// 拡張子を取得
+String getExtension(String name) {
+  final splitList = name.split('.');
+  return splitList[splitList.length - 1];
+}
+
+/// ファイル名チェック
+bool checkInputFileName(String text, String extension, Directory directory) {
+  if (text.isNotEmpty) {
+    String name = '$text.$extension';
+    // ファイル名が重複してエラーが出ないようチェック
+    List<String> list = getOriginalFileNameList(directory);
+    for (int i=0; i<list.length; i++) {
+      if (list[i] == name) {
+        break;
+      } else if (i == list.length - 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /// CSVファイルを作成
 void createCSVFile(
     String outputPath,

@@ -19,13 +19,13 @@ class FileHandlingDialog extends StatelessWidget {
 
   FileHandlingDialog(this.fileName, this.dir, {Key? key}) : super(key: key) {
     dirPath = dir.path;
-    filePath = dirPath + '/' + fileName;
+    filePath = '$dirPath/$fileName';
   }
 
   // 選択されたファイルを表示
   void _onDisplay(WidgetRef ref) {
     // 拡張子を取得
-    String extension = _getExtension();
+    String extension = getExtension(fileName);
 
     StaticVar.previewFilePath = filePath;
 
@@ -44,16 +44,10 @@ class FileHandlingDialog extends StatelessWidget {
 
   // ファイル名変更
   void _changeName() {
-    String newFilePath = dirPath + '/' + inputText + '.csv';
+    String newFilePath = '$dirPath/$inputText.csv';
     File(filePath).copySync(newFilePath);
     _onDelete();
     _reloadFileList();
-  }
-
-  // 拡張子を取得
-  String _getExtension() {
-    final splitList = fileName.split('.');
-    return splitList[splitList.length - 1];
   }
 
   void _reloadFileList() {
@@ -62,46 +56,28 @@ class FileHandlingDialog extends StatelessWidget {
     ref.read(fileListProvider.notifier).setList(list);
   }
 
-  // ファイル名チェック
-  bool checkInputFileName(String text) {
-    if (text.isNotEmpty) {
-      String extension = _getExtension();
-      String name = '$text.$extension';
-      // ファイル名が重複してエラーが出ないようチェック
-      List<String> list = getOriginalFileNameList(dir);
-      for (int i=0; i<list.length; i++) {
-        if (list[i] == name) {
-          break;
-        } else if (i == list.length - 1) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text('ファイルの操作'),
+      title: const Text('ファイルの操作'),
       children: [
         SimpleDialogOption(
           onPressed: null,
-          child: Text('ファイル名 : '+fileName, style: TextStyle(fontSize: 12),),
+          child: Text('ファイル名 : $fileName', style: const TextStyle(fontSize: 12),),
         ),
         SimpleDialogOption(
             onPressed: () {
               Navigator.pop(context);
               _onDisplay(ref);
             },
-            child: Text('表示')
+            child: const Text('表示')
         ),
         SimpleDialogOption(
           onPressed: () {
             Navigator.pop(context);
             _onDelete();
           },
-          child: Text('削除'),
+          child: const Text('削除'),
         ),
         SimpleDialogOption(
           onPressed: () {
@@ -110,7 +86,7 @@ class FileHandlingDialog extends StatelessWidget {
                 context: context,
                 builder: (context1) {
                   return AlertDialog(
-                    title: Text('ファイル名を入力'),
+                    title: const Text('ファイル名を入力'),
                     content: TextField(
                       obscureText: true,
                       decoration: const InputDecoration(
@@ -127,7 +103,7 @@ class FileHandlingDialog extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context1);
-                          if (checkInputFileName(inputText)) {
+                          if (checkInputFileName(inputText, getExtension(fileName), dir)) {
                             _changeName();
                           } else {
                             showDialog(
@@ -138,13 +114,13 @@ class FileHandlingDialog extends StatelessWidget {
                                     fontWeight: FontWeight.w300,
                                     color: Colors.redAccent
                                   ),),
-                                  content: Text('同名のファイルが存在するか、ファイル名が入力されませんでした。'),
+                                  content: const Text('同名のファイルが存在するか、ファイル名が入力されませんでした。'),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
                                         Navigator.pop(context2);
                                       },
-                                      child: Text('OK', style: TextStyle(color: Color(0xffeece01)),)
+                                      child: const Text('OK', style: TextStyle(color: Color(0xffeece01)),)
                                     )
                                   ],
                                 );
@@ -155,14 +131,14 @@ class FileHandlingDialog extends StatelessWidget {
                         style: TextButton.styleFrom(
                           primary: Colors.white54,
                         ),
-                        child: Text('OK', style: TextStyle(color: Color(0xffeece01)),),
+                        child: const Text('OK', style: TextStyle(color: Color(0xffeece01)),),
                       )
                     ],
                   );
                 }
             );
           },
-          child: Text('ファイル名変更'),
+          child: const Text('ファイル名変更'),
         )
       ],
     );

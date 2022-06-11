@@ -13,7 +13,7 @@ import 'main_page.dart';
 class TrimmingPage extends StatefulWidget {
   TrimmingPage({Key? key}) : super(key: key);
 
-  final File inputFile = File(VideoFilePath.trInputPath);
+  final File inputFile = File(VideoFilePath.trimmingInputPath);
 
   @override
   State<TrimmingPage> createState() => _TrimmingPageState();
