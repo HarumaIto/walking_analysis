@@ -1,7 +1,4 @@
-import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../utility/file_processor.dart';
 
 class StaticVar {
 
@@ -13,6 +10,4 @@ class StaticVar {
   static String previewFilePath = '';
 
   static WidgetRef? globalRef;
-
-  static List<CameraDescription>? cameras;
 }

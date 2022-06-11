@@ -1,4 +1,3 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -37,8 +36,6 @@ void main() async{
   VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
   // 比較用データの設定
   StaticVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
-  // 使用可能なカメラのリストを取得
-  StaticVar.cameras = await availableCameras();
   // ユーザー設定の初期化
   UserSettingPreference().initUserSetting();
 }
