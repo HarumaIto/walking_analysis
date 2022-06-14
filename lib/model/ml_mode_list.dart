@@ -4,6 +4,6 @@ enum MlModels {
 }
 
 final mlDescriptionText = [
-  "高精度＆低速",
-  "低精度＆高速",
+  "高精度&低速",
+  "低精度&高速",
 ];

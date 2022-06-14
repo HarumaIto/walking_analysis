@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/page_list.dart';
 import '../model/global_variable.dart';
 import '../state/home_providers.dart';
-import '../utility/file_processor.dart';
 
 class MyMainPage extends ConsumerStatefulWidget {
   const MyMainPage({Key? key}) : super(key: key);
@@ -15,13 +14,6 @@ class MyMainPage extends ConsumerStatefulWidget {
 }
 
 class MyMainPageState extends ConsumerState<MyMainPage> {
-
-  @override
-  void dispose() {
-    // アプリで作成された一時ファイルの削除
-    deleteCache();
-    super.dispose();
-  }
 
   @override
   void initState() {

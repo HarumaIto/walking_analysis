@@ -14,6 +14,7 @@ class MlViewModel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var selectedVal = mlDescriptionText[ref.watch(useModelProvider)];
     final canProcess = ref.watch(processStateProvider);
+    final runTime = ref.watch(runTimeProvider);
     final progressVal = ref.watch(progressValProvider).value;
     final isDeterminate = ref.watch(progressValProvider).isDeterminate;
     final percentProgress = (ref.watch(progressValProvider).value * 100).round();
@@ -29,7 +30,7 @@ class MlViewModel extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: isDeterminate
                     ? LinearProgressIndicator(
                   backgroundColor: Colors.grey[400],
@@ -43,7 +44,13 @@ class MlViewModel extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8,),
-              Text('$selectedVal : $percentProgress%', style: const TextStyle(fontSize: 14),),
+              Row(
+                children: [
+                  Text('実行時間: $runTime [ms]'),
+                  const Spacer(),
+                  Text('$selectedVal: $percentProgress%', style: const TextStyle(fontSize: 14),),
+                ],
+              )
             ],
           ),
         ),

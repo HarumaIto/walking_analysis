@@ -14,9 +14,8 @@ class VideoToImage {
 
   Future videoConfig() async {
     try {
-      final FlutterFFprobe _flutterFFprobe = FlutterFFprobe();
-      int frameNum =
-      await _flutterFFprobe.getMediaInformation(_filePath).then((info) {
+      final FlutterFFprobe flutterFFprobe = FlutterFFprobe();
+      int frameNum = await flutterFFprobe.getMediaInformation(_filePath).then((info) {
         //動画の時間を取得
         duration = info.getMediaProperties()!['duration'];
         if (info.getAllProperties()['streams'][0]['r_frame_rate'] == '0/0') {
@@ -32,19 +31,18 @@ class VideoToImage {
         //取得した動画の時間は文字列なので変換する
         final durationDouble = double.parse(duration);
         //動画をスプリットするフレーム数を計算する
-        int frameNumber =
-        (durationDouble * fracRealFrameRate.toDouble()).toInt();
+        int frameNumber = (durationDouble * fracRealFrameRate.toDouble()).toInt();
         return frameNumber;
       });
       return frameNum;
     } catch (e) {
-      print('error : '+e.toString());
+      print('error : $e');
     }
   }
 
   Future convertImage(path, frameNumber) async {
     try {
-      final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
+      final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd–kk-mm-ss').format(now);
       //スプリットした画像を保存するパスを指定しておく
@@ -53,8 +51,8 @@ class VideoToImage {
       ImagesInfo.IMAGES_PATH = outputPath;
 
       //ここで動画を指定したフレーム数に画像変換する
-      await _flutterFFmpeg
-          .execute("-i $_filePath -vframes $frameNumber $outputPath")
+      await flutterFFmpeg
+          .execute("-i $_filePath -vcodec png -q:v 1 -vframes $frameNumber $outputPath")
           .then((rc) => print("FFmpeg process exited with rc $rc"));
 
       pathNameList = [];

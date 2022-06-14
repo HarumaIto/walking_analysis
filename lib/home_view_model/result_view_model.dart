@@ -9,9 +9,7 @@ import 'package:walking_analysis/widget/original_icon_button.dart';
 
 import 'package:intl/intl.dart' as intl;
 
-import '../model/preference_keys.dart';
 import '../model/global_variable.dart';
-import '../repository/sharedpref_repository.dart';
 import '../state/home_providers.dart';
 import '../utility/calculation.dart';
 
@@ -75,7 +73,7 @@ class ResultViewModel extends ConsumerWidget {
         Text(score),
         OriginalIconButton(
           icon: Icons.save_alt,
-          onPressed: UserSettingPreference().prefs!.getBool(PreferenceKeys.isSaveVideo.name)! && saveVideoState
+          onPressed: saveVideoState
               ? () => saveVideoDialog(context)
               : null,
           text: const Text('動画を保存'),
@@ -94,7 +92,6 @@ class ResultViewModel extends ConsumerWidget {
       return AlertDialog(
         title: const Text('ファイル名を入力'),
         content: TextField(
-          obscureText: true,
           decoration: InputDecoration(
               hintText: 'ファイル名を入力してください',
               border: const OutlineInputBorder(),
@@ -105,6 +102,10 @@ class ResultViewModel extends ConsumerWidget {
           },
         ),
         actions: [
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('CANCEL', style: TextStyle(color: Color(0xffeece01)),)
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -138,7 +139,7 @@ class ResultViewModel extends ConsumerWidget {
               primary: Colors.white54,
             ),
             child: const Text('OK', style: TextStyle(color: Color(0xffeece01)),),
-          )
+          ),
         ],
       );
     });

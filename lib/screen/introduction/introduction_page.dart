@@ -12,6 +12,8 @@ class IntroductionPage extends StatefulWidget {
 }
 
 class IntroductionState extends State<IntroductionPage> {
+  // スキップボタンと戻るボタンを切り替える用
+  bool showSkipButton = true;
 
   @override
   void initState() {
@@ -69,6 +71,17 @@ class IntroductionState extends State<IntroductionPage> {
           ),
         ),
       ],
+      showBackButton: !showSkipButton,
+      showSkipButton: showSkipButton,
+      onChange: (index) {
+        setState(() {
+          if (index == 0) {
+            showSkipButton = true;
+          } else {
+            showSkipButton = false;
+          }
+        });
+      },
       onDone: (){
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
@@ -76,9 +89,16 @@ class IntroductionState extends State<IntroductionPage> {
             ), (_) => false);
         GlobalVar.globalRef!.read(introductionProvider.notifier).setIntro();
       },
-      showSkipButton: true,
+
       skip: const Text(
         'スキップ',
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Colors.orangeAccent,
+        ),
+      ),
+      back: const Text(
+        '戻る',
         style: TextStyle(
           fontWeight: FontWeight.w600,
           color: Colors.orangeAccent,

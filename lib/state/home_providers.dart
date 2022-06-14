@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walking_analysis/model/ml_mode_list.dart';
 import 'package:walking_analysis/model/preference_keys.dart';
 import 'package:walking_analysis/repository/sharedpref_repository.dart';
@@ -18,10 +19,17 @@ final saveVideoStateProvider = StateProvider((_) => false);
 // BottomNavigationBar用
 final selectedIndexProvider = StateProvider((_) => 1);
 
+// 1画像当たりの実行時間
+final runTimeProvider = StateProvider((_) => '0');
+
 // モデル選択用
 final useModelProvider = StateProvider((_) {
-  String useModelName = UserSettingPreference().prefs!.getString(PreferenceKeys.useModel.name)!;
-  if(useModelName == MlModels.movenetThunder.name) {
+  SharedPreferences pref = UserSettingPreference().prefs!;
+  String? useModelName = pref.getString(PreferenceKeys.useModel.name);
+  if (useModelName == null) {
+    pref.setString(PreferenceKeys.useModel.name, MlModels.movenetThunder.name);
+    return 0;
+  } else if(useModelName == MlModels.movenetThunder.name) {
     return 0;
   } else {
     return 1;

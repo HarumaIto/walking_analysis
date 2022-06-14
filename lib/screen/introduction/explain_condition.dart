@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 
 import '../../model/global_variable.dart';
-import '../../view_model/prepare_view_model.dart';
+import '../../home_view_model/prepare_view_model.dart';
 
 class ExplainCondition extends StatefulWidget {
   final ImageSource source;
@@ -12,7 +12,7 @@ class ExplainCondition extends StatefulWidget {
 
   String doneText = '';
 
-  ExplainCondition(this.source, this.ref) {
+  ExplainCondition(this.source, this.ref, {Key? key}) : super(key: key) {
     if (source == ImageSource.camera) {
       doneText = '撮影';
     } else {
@@ -25,6 +25,8 @@ class ExplainCondition extends StatefulWidget {
 }
 
 class ExplainConditionState extends State<ExplainCondition> {
+  // スキップボタンと戻るボタンを切り替える用
+  bool showSkipButton = true;
 
   @override
   Widget build(BuildContext context) {
@@ -124,12 +126,29 @@ class ExplainConditionState extends State<ExplainCondition> {
                     )
                 ),
               ],
-              showBackButton: true,
+              showBackButton: !showSkipButton,
+              showSkipButton: showSkipButton,
+              onChange: (index) {
+                setState(() {
+                  if (index == 0) {
+                    showSkipButton = true;
+                  } else {
+                    showSkipButton = false;
+                  }
+                });
+              },
               onDone: (){
                 PrepareViewModel().getVideo(widget.source, widget.ref, context);
               },
               back: const Text(
                 '戻る',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.orangeAccent,
+                ),
+              ),
+              skip: const Text(
+                'スキップ',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Colors.orangeAccent,

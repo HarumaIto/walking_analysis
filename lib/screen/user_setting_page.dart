@@ -15,19 +15,17 @@ class UserSettingPage extends StatefulWidget {
 
 class UserSettingPageState extends State<UserSettingPage> {
   final SharedPreferences prefs = UserSettingPreference().prefs!;
+  bool isChanged = false;
 
-  bool? isSaveVideo;
   String? useModel;
 
   // 保存してあるプリファレンスを取得
   void getPreference() {
-    isSaveVideo = prefs.getBool(PreferenceKeys.isSaveVideo.name);
     useModel = prefs.getString(PreferenceKeys.useModel.name);
   }
 
   // 変更後のプリファレンスを保存
   void setPreference() async {
-    await prefs.setBool('isSaveVideo', isSaveVideo!);
     await prefs.setString('useModel', useModel!);
   }
 
@@ -40,16 +38,17 @@ class UserSettingPageState extends State<UserSettingPage> {
     }
   }
 
+  void closeDialogAndScreen(BuildContext context) {
+    // dialogを閉じる用
+    Navigator.pop(context);
+    // スクリーンを閉じる用
+    Navigator.pop(context);
+  }
+
   @override
   void initState() {
     super.initState();
     getPreference();
-  }
-
-  @override
-  void dispose() {
-    setPreference();
-    super.dispose();
   }
 
   @override
@@ -59,7 +58,32 @@ class UserSettingPageState extends State<UserSettingPage> {
         title: const Text('設定',),
         centerTitle: true,
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (isChanged) {
+              showDialog(context: context, builder: (_) {
+                return AlertDialog(
+                  title: const Text('設定を保存しますか？'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        setPreference();
+                        closeDialogAndScreen(context);
+                      },
+                      child: const Text('OK')
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        closeDialogAndScreen(context);
+                      },
+                      child: const Text('CANCEL'),
+                    )
+                  ],
+                );
+              });
+            } else {
+              Navigator.pop(context);
+            }
+          },
           icon: const Icon(Icons.arrow_back),
         ),
       ),
@@ -67,20 +91,6 @@ class UserSettingPageState extends State<UserSettingPage> {
          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         child: Column(
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-              child: SwitchListTile(
-                title: const Text('実行後の動画を保存する'),
-                value: isSaveVideo!,
-                onChanged: (value) {
-                  setState(() {
-                    isSaveVideo = value;
-                  }) ;
-                }
-              ),
-            ),
             Container(
               margin: const EdgeInsets.only(top: 8),
               decoration: const BoxDecoration(
@@ -96,6 +106,7 @@ class UserSettingPageState extends State<UserSettingPage> {
                     value: MlModels.movenetThunder.name,
                     groupValue: useModel,
                     onChanged: (value) {
+                      isChanged = true;
                       setState(() {
                         useModel = value.toString();
                       });
@@ -108,6 +119,7 @@ class UserSettingPageState extends State<UserSettingPage> {
                     value: MlModels.movenetLightning.name,
                     groupValue: useModel,
                     onChanged: (value) {
+                      isChanged = true;
                       setState(() {
                         useModel = value.toString();
                       });

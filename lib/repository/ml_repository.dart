@@ -19,6 +19,8 @@ class MlRepository {
   final WidgetRef ref = GlobalVar.globalRef!;
   final MethodChannel channel = const MethodChannel('com.hanjukukobo.walking_analysis/ml');
 
+  double runTimeSum = 0;
+
   MlRepository.start() {
     createImages().then((pathNameList) {
       _processImage(pathNameList);
@@ -51,6 +53,8 @@ class MlRepository {
     // try-catchはなぜかループが一回多く回ってしまうことに対処するため
     try {
       for (String imagePath in pathNameList) {
+        Stopwatch stopwatch = Stopwatch();
+        stopwatch.start();
         // ネイティブから関節角度を取得
         Uint8List imageBytes = File(imagePath).readAsBytesSync();
         Map map = await channel.invokeMethod('process', imageBytes);
@@ -72,6 +76,10 @@ class MlRepository {
           ref.read(progressValProvider.notifier).setIsDeterminate(true);
         }
         ref.read(progressValProvider.notifier).setValue(percent);
+        stopwatch.stop();
+        runTimeSum += stopwatch.elapsedMilliseconds.toDouble();
+        ref.read(runTimeProvider.notifier).state = stopwatch.elapsedMilliseconds.toString();
+        stopwatch.reset();
       }
     } catch (e) {
       print(e);
@@ -86,9 +94,12 @@ class MlRepository {
     DateTime now = DateTime.now();
     String formattedDate = intl.DateFormat('yyyy-MM-dd–hh-mm-ss').format(now);
 
+    ref.read(runTimeProvider.notifier).state = '平均 ${runTimeSum~/frameNum}';
+
     // 動画出力
     final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
-    await flutterFFmpeg.execute("-y -i $inputPath -vcodec mpeg4 -b:v 10000k -vframes $frameNum $outputVideoPath");
+    await flutterFFmpeg.execute("-y -i $inputPath -vcodec mpeg4 -q:v 1 -vframes $frameNum $outputVideoPath");
+    deleteCache();
 
     // csvファイルを作成
     String dirPath = await getExternalStoragePath();

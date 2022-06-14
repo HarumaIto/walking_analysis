@@ -4,10 +4,10 @@ import 'package:walking_analysis/screen/user_setting_page.dart';
 
 import '../../repository/restart_repository.dart';
 import '../../state/home_providers.dart';
-import '../../view_model/chart_view_model.dart';
-import '../../view_model/ml_view_model.dart';
-import '../../view_model/prepare_view_model.dart';
-import '../../view_model/result_view_model.dart';
+import '../../home_view_model/chart_view_model.dart';
+import '../../home_view_model/ml_view_model.dart';
+import '../../home_view_model/prepare_view_model.dart';
+import '../../home_view_model/result_view_model.dart';
 import '../../widget/card_template.dart';
 
 class HomePage extends ConsumerWidget {

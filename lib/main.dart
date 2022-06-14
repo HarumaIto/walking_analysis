@@ -13,7 +13,7 @@ import 'model/video_file_path.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-void main() async{
+void main() async {
   // ここで非同期処理を行えるようにする
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -21,9 +21,10 @@ void main() async{
   // ステータスバー & ナビゲーションバーの設定
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // ユーザー設定の初期化
+  UserSettingPreference userSettingPreference = UserSettingPreference();
+  userSettingPreference.prefs = await SharedPreferences.getInstance();
+  userSettingPreference.initUserSetting();
 
   // pathの設定
   VideoFilePath.trimmingInputPath = '${(await getExternalStorageDirectory())!.path}/select.mp4';
@@ -31,8 +32,10 @@ void main() async{
   VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
   // 比較用データの設定
   GlobalVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
-  // ユーザー設定の初期化
-  UserSettingPreference().prefs = await SharedPreferences.getInstance();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // 最後にUIを構築
   runApp(

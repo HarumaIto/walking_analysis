@@ -14,8 +14,17 @@ class UserSettingPreference {
   SharedPreferences? prefs;
   bool? isSaveVideo = false;
 
-  void initUserSetting() async {
-    prefs!.setBool(PreferenceKeys.isSaveVideo.name, false);
-    prefs!.setString(PreferenceKeys.useModel.name, 'movenetThunder');
+  bool checkInitialized() {
+    if(prefs!.getString(PreferenceKeys.useModel.name) == null) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void initUserSetting() {
+    if (!checkInitialized()) {
+      prefs!.setString(PreferenceKeys.useModel.name, 'movenetThunder');
+    }
   }
 }

@@ -131,7 +131,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                               itemBuilder: (context, index) {
                                 return Container(
                                   height: 24,
-                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                                   child: OutlinedButton(
                                     onPressed: () => showDialog(
                                         context: context,
@@ -162,7 +162,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
               CardTemplate(
                   title: 'グラフまたは動画を表示',
                   child: Container(
-                    padding: EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: 8),
                     width: double.infinity,
                     child: Column(
                       children: [
@@ -170,7 +170,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                           Container(
                             height: 100,
                             alignment: Alignment.center,
-                            child: Text('選択されていません'),
+                            child: const Text('選択されていません'),
                           )
                         else if(fileExtension == PreviewModel.CSV_EXTENSION)
                           Column(
@@ -178,14 +178,14 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                               Container(
                                 height: 200,
                                 width: double.infinity,
-                                padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
                                 child: chart.LineChart(
                                     _createDataList()
                                 ),
                               ),
                               Container(
                                   width: double.infinity,
-                                  margin: EdgeInsets.only(bottom: 4, right: 16),
+                                  margin: const EdgeInsets.only(bottom: 4, right: 16),
                                   child:Text(fileName, textAlign: TextAlign.right,)
                               ),
                             ],
@@ -201,20 +201,16 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                                     alignment: Alignment.center,
                                     child: VideoPlayer(previewController = _createVideoController(GlobalVar.previewFilePath))
                                 ),
-                                Row(
-                                  children: [
-                                    Container(
-                                        decoration: BoxDecoration(
-                                            color: const Color(0x88eece01),
-                                            borderRadius: BorderRadius.circular(24)
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {previewController.play();},
-                                          icon: const Icon(Icons.restart_alt),
-                                        )
+                                Container(
+                                    decoration: BoxDecoration(
+                                        color: const Color(0x88eece01),
+                                        borderRadius: BorderRadius.circular(24)
                                     ),
-                                  ],
-                                )
+                                    child: IconButton(
+                                      onPressed: () {previewController.play();},
+                                      icon: const Icon(Icons.restart_alt),
+                                    )
+                                ),
                               ],
                             )
                       ],
@@ -233,20 +229,16 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                           alignment: Alignment.center,
                           child: VideoPlayer(outputController = _createVideoController(VideoFilePath.mlOutputPath))
                       ),
-                      Row(
-                        children: [
-                          Container(
-                              decoration: BoxDecoration(
-                                  color: const Color(0x88eece01),
-                                  borderRadius: BorderRadius.circular(24)
-                              ),
-                              child: IconButton(
-                                onPressed: () {outputController.play();},
-                                icon: const Icon(Icons.restart_alt),
-                              )
+                      Container(
+                          decoration: BoxDecoration(
+                              color: const Color(0x88eece01),
+                              borderRadius: BorderRadius.circular(24)
                           ),
-                        ],
-                      )
+                          child: IconButton(
+                            onPressed: () {outputController.play();},
+                            icon: const Icon(Icons.restart_alt),
+                          )
+                      ),
                     ],
                   ) : Container(
                     alignment: Alignment.center,
