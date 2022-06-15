@@ -17,16 +17,22 @@ class UserSettingPageState extends State<UserSettingPage> {
   final SharedPreferences prefs = UserSettingPreference().prefs!;
   bool isChanged = false;
 
+  String nameISVT = PreferenceKeys.isSaveVideoTaken.name;
+  String nameUseModel = PreferenceKeys.useModel.name;
+
+  bool? isSaveVideoTaken;
   String? useModel;
 
   // 保存してあるプリファレンスを取得
   void getPreference() {
-    useModel = prefs.getString(PreferenceKeys.useModel.name);
+    isSaveVideoTaken = prefs.getBool(nameISVT);
+    useModel = prefs.getString(nameUseModel);
   }
 
   // 変更後のプリファレンスを保存
   void setPreference() async {
-    await prefs.setString('useModel', useModel!);
+    await prefs.setBool(nameISVT, isSaveVideoTaken!);
+    await prefs.setString(nameUseModel, useModel!);
   }
 
   // 使用する機械学習モデルをセットする
@@ -91,8 +97,18 @@ class UserSettingPageState extends State<UserSettingPage> {
          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         child: Column(
           children: [
+           SwitchListTile(
+             title: const Text('アプリ内で撮影した動画を保存する'),
+             value: isSaveVideoTaken!,
+             onChanged: (value) {
+               isChanged = true;
+               setState(() {
+                 isSaveVideoTaken = value;
+               });
+             },
+            ),
             Container(
-              margin: const EdgeInsets.only(top: 8),
+              margin: const EdgeInsets.only(top: 8, left: 8),
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),

@@ -15,7 +15,9 @@ class UserSettingPreference {
   bool? isSaveVideo = false;
 
   bool checkInitialized() {
-    if(prefs!.getString(PreferenceKeys.useModel.name) == null) {
+    if (prefs!.getBool(PreferenceKeys.isSaveVideoTaken.name) == null) {
+      return false;
+    } else if (prefs!.getString(PreferenceKeys.useModel.name) == null) {
       return false;
     } else {
       return true;
@@ -24,6 +26,7 @@ class UserSettingPreference {
 
   void initUserSetting() {
     if (!checkInitialized()) {
+      prefs!.setBool(PreferenceKeys.isSaveVideoTaken.name, false);
       prefs!.setString(PreferenceKeys.useModel.name, 'movenetThunder');
     }
   }

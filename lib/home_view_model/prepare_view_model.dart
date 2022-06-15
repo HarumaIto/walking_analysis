@@ -3,7 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:walking_analysis/model/preference_keys.dart';
+import 'package:walking_analysis/repository/sharedpref_repository.dart';
 
 import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
@@ -23,6 +27,8 @@ class PrepareViewModel extends ConsumerWidget {
     ImagePicker picker = ImagePicker();
     XFile? xFile = await picker.pickVideo(
         source: source, maxDuration: const Duration(seconds: 10));
+
+    if (source == ImageSource.camera) saveVideoTaken(xFile!.path);
 
     // ナビゲーションバーで戻られた場合用
     if (xFile == null) return;
@@ -102,6 +108,15 @@ class PrepareViewModel extends ConsumerWidget {
       return thumbModel.bytes;
     }
     return null;
+  }
+
+  // 撮影した動画を写真またはギャラリーへ保存
+  void saveVideoTaken(String path) {
+    SharedPreferences pref = UserSettingPreference().prefs!;
+    bool? isSave = pref.getBool(PreferenceKeys.isSaveVideoTaken.name);
+    if (isSave != null && isSave) {
+      GallerySaver.saveVideo(path);
+    }
   }
 
   @override

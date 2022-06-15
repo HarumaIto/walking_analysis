@@ -1,4 +1,4 @@
 enum PreferenceKeys {
-  isSaveVideo,
+  isSaveVideoTaken,
   useModel,
 }
