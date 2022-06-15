@@ -33,7 +33,6 @@ class PreviewPageState extends State<PreviewPage> {
 
   // カメラの初期化処理
   Future _initializeCamera() async {
-    debugPrint('initializeCamera');
     List<CameraDescription> cameras = await availableCameras();
     _camera = cameras.first;
     final CameraController cameraController = CameraController(
@@ -43,15 +42,21 @@ class PreviewPageState extends State<PreviewPage> {
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
     _controller = cameraController;
-    return _controller!.initialize().then((_) {
-      _start();
-    });
+    return _controller!.initialize();
   }
 
   void _start() {
-    _controller?.startImageStream(_processCameraImage);
+    _controller!.startImageStream(_processCameraImage);
     setState(() {
       _isStreaming = true;
+    });
+  }
+
+  void _stop() {
+    _controller!.stopImageStream();
+    setState(() {
+      _isStreaming = false;
+      _timeMs = '';
     });
   }
 
@@ -102,27 +107,33 @@ class PreviewPageState extends State<PreviewPage> {
                       )
                   ),
                 ),
-                Align(
-                  alignment: const Alignment(-0.96, -0.98),
-                  child: Container(
-                    color: Colors.white70,
-                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                    child: Text(
-                      _timeMs,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.black87
+                _isStreaming ? Align(
+                    alignment: const Alignment(-0.96, -0.98),
+                    child: Container(
+                      color: Colors.white70,
+                      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                      child: Text(
+                        _timeMs,
+                        style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.black87
+                        ),
                       ),
-                    ),
-                  )
-                )
+                    )
+                ) : Container(),
               ],
             );
           } else {
             return const Center(child: CircularProgressIndicator());
           }
         },
-      )
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _isStreaming ? _stop() : _start(),
+        child: _isStreaming
+            ? const Icon(Icons.close)
+            : const Icon(Icons.add),
+      ),
     );
   }
 
