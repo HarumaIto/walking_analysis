@@ -17,18 +17,17 @@ import '../screen/main_page.dart';
 import '../screen/trimming_page.dart';
 import '../state/home_providers.dart';
 import '../utility/create_thumbnail.dart';
+import '../utility/file_processor.dart';
 import '../widget/original_icon_button.dart';
 
 class PrepareViewModel extends ConsumerWidget {
-  PrepareViewModel({Key? key}) : super(key: key);
+  const PrepareViewModel({Key? key}) : super(key: key);
 
   // 動画を取得する
   Future getVideo(ImageSource source, WidgetRef ref, BuildContext context) async {
     ImagePicker picker = ImagePicker();
     XFile? xFile = await picker.pickVideo(
         source: source, maxDuration: const Duration(seconds: 10));
-
-    if (source == ImageSource.camera) saveVideoTaken(xFile!.path);
 
     // ナビゲーションバーで戻られた場合用
     if (xFile == null) return;
@@ -73,6 +72,7 @@ class PrepareViewModel extends ConsumerWidget {
                     TextButton(
                       child: const Text("いいえ", style: TextStyle(color: Colors.blueAccent)),
                       onPressed: () {
+                        if (source == ImageSource.camera) saveVideoTaken(xFile.path);
                         Navigator.pop(context);
                         ref.read(processStateProvider.notifier).state = true;
                         Navigator.of(context).pushAndRemoveUntil(
@@ -88,7 +88,7 @@ class PrepareViewModel extends ConsumerWidget {
                         ref.read(processStateProvider.notifier).state = true;
                         Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
-                              builder: (_) => TrimmingPage(),
+                              builder: (_) => TrimmingPage(source),
                             ), (_) => false);
                       },
                     )
@@ -108,15 +108,6 @@ class PrepareViewModel extends ConsumerWidget {
       return thumbModel.bytes;
     }
     return null;
-  }
-
-  // 撮影した動画を写真またはギャラリーへ保存
-  void saveVideoTaken(String path) {
-    SharedPreferences pref = UserSettingPreference().prefs!;
-    bool? isSave = pref.getBool(PreferenceKeys.isSaveVideoTaken.name);
-    if (isSave != null && isSave) {
-      GallerySaver.saveVideo(path);
-    }
   }
 
   @override

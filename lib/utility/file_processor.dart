@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/preference_keys.dart';
+import '../repository/sharedpref_repository.dart';
 import '../state/file_library_provider.dart';
 
 /// 一時ディレクトリへのパス
@@ -19,6 +23,15 @@ Future<String> getTemporaryDirectoryPath() async {
  Future<String> getExternalStoragePath() async {
   Directory? appDocDir = await getExternalStorageDirectory();
   return appDocDir!.path;
+}
+
+/// 撮影した動画を写真またはギャラリーへ保存
+void saveVideoTaken(String path) {
+  SharedPreferences pref = UserSettingPreference().prefs!;
+  bool? isSave = pref.getBool(PreferenceKeys.isSaveVideoTaken.name);
+  if (isSave != null && isSave) {
+    GallerySaver.saveVideo(path);
+  }
 }
 
 /// 機械学習で使った連番画像を削除

@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:walking_analysis/utility/file_processor.dart';
 
 import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
@@ -11,8 +13,9 @@ import '../widget/rangeslider.dart';
 import 'main_page.dart';
 
 class TrimmingPage extends StatefulWidget {
-  TrimmingPage({Key? key}) : super(key: key);
+  TrimmingPage(this.source, {Key? key}) : super(key: key);
 
+  final ImageSource source;
   final File inputFile = File(VideoFilePath.trimmingInputPath);
 
   @override
@@ -126,9 +129,9 @@ class _TrimmingPageState extends State<TrimmingPage> {
     );
 
     _flutterFFmpeg
-        .execute(
-        '-i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
+        .execute('-i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
         .then((value) {
+      if (widget.source == ImageSource.camera) saveVideoTaken(outPath);
       print('Got value $value');
       setState(() {
         print('Video is saved');
