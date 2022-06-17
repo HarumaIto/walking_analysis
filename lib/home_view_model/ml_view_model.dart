@@ -27,7 +27,7 @@ class MlViewModel extends ConsumerWidget {
         SizedBox(
           width: width / 1.7,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -44,13 +44,14 @@ class MlViewModel extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8,),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('実行時間: $runTime [ms]'),
-                  const Spacer(),
-                  Text('$selectedVal: $percentProgress%', style: const TextStyle(fontSize: 14),),
+                  Text('$selectedValモデル: $percentProgress%', style: const TextStyle(fontSize: 12),),
+                  const SizedBox(height: 2,),
+                  Text('実行時間: $runTime [ms]', style: const TextStyle(fontSize: 12),),
                 ],
-              )
+              ),
             ],
           ),
         ),

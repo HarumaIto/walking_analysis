@@ -1,16 +1,15 @@
 import 'dart:io';
 
-import 'package:charts_flutter/flutter.dart' as chart;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:walking_analysis/model/video_file_path.dart';
+import 'package:walking_analysis/repository/fl_chart_repository.dart';
 
-import '../../model/angle_data.dart';
 import '../../model/global_variable.dart';
 import '../../state/file_library_provider.dart';
-import '../../utility/chart_util.dart';
 import '../../utility/file_processor.dart';
 import '../../widget/card_template.dart';
 import '../../widget/file_page_dialog.dart';
@@ -47,6 +46,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
     return false;
   }
 
+  /*
   // チャートを作成する
   List<chart.Series<AngleData, int>> _createDataList() {
     List<AngleData> dataList = dataExtraction(getDataForFileCSV(GlobalVar.previewFilePath), 0);
@@ -60,6 +60,8 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
       )
     ];
   }
+   */
+
 
   // 動画を表示するWidgetを作成する
   VideoPlayerController _createVideoController(String filePath) {
@@ -179,8 +181,11 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                                 height: 200,
                                 width: double.infinity,
                                 padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-                                child: chart.LineChart(
-                                    _createDataList()
+                                child: LineChart(
+                                    FlChartRepository(
+                                      showComparisonData: false,
+                                      dataList: getDataForFileCSV(GlobalVar.previewFilePath)
+                                    ).createChartData()
                                 ),
                               ),
                               Container(

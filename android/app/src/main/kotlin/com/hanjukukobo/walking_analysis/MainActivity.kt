@@ -70,7 +70,6 @@ class MainActivity: FlutterActivity() {
                 angleList.add(rightKneeAngle)
             }
 
-
             val outputBitmap = visualize(persons, bitmap)
 
             val baos = ByteArrayOutputStream()
