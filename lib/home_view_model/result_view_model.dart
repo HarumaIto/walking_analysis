@@ -59,29 +59,6 @@ class ResultViewModel extends ConsumerWidget {
     return results;
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    String score = ref.watch(scoreProvider);
-    List dataList = ref.watch(dataListProvider).dataList;
-    saveVideoState = ref.watch(saveVideoStateProvider);
-    if (dataList.isNotEmpty && score == '-----') processResult(dataList, ref);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        const Text('スコア', style: TextStyle(fontWeight: FontWeight.bold)),
-        Text(score),
-        OriginalIconButton(
-          icon: Icons.save_alt,
-          onPressed: saveVideoState
-              ? () => saveVideoDialog(context)
-              : null,
-          text: const Text('動画を保存'),
-        ),
-      ],
-    );
-  }
-
   void saveVideoDialog(BuildContext context) async {
     // 動画保存用ダイアログ
     DateTime now = DateTime.now();
@@ -143,5 +120,28 @@ class ResultViewModel extends ConsumerWidget {
         ],
       );
     });
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    String score = ref.watch(scoreProvider);
+    List dataList = ref.watch(dataListProvider).dataList;
+    saveVideoState = ref.watch(saveVideoStateProvider);
+    if (dataList.isNotEmpty && score == '-----') processResult(dataList, ref);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        const Text('スコア', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(score),
+        OriginalIconButton(
+          icon: Icons.save_alt,
+          onPressed: saveVideoState
+              ? () => saveVideoDialog(context)
+              : null,
+          text: const Text('動画を保存'),
+        ),
+      ],
+    );
   }
 }

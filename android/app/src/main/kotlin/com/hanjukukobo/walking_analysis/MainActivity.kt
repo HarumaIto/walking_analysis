@@ -1,12 +1,11 @@
 package com.hanjukukobo.walking_analysis
 
 import android.graphics.*
-import androidx.core.graphics.createBitmap
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
-import java.lang.Math.*
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 class MainActivity: FlutterActivity() {
@@ -134,31 +133,34 @@ class MainActivity: FlutterActivity() {
             lastLandmark: KeyPoint) : Int {
 
         // 辺の長さを計算
-        val firstToMid = pow(
-                pow((firstLandmark.coordinate.x - middleLandmark.coordinate.x).toDouble(), 2.0)
-                        + pow((firstLandmark.coordinate.y - middleLandmark.coordinate.y).toDouble(), 2.0), 0.5)
+        val firstToMid = (
+                (firstLandmark.coordinate.x - middleLandmark.coordinate.x).toDouble().pow(2.0)
+                        + (firstLandmark.coordinate.y - middleLandmark.coordinate.y).toDouble().pow(2.0)
+                ).pow(0.5)
 
-        val lastToMid = pow(
-                pow((lastLandmark.coordinate.x - middleLandmark.coordinate.x).toDouble(), 2.0)
-                        + pow((lastLandmark.coordinate.y - middleLandmark.coordinate.y).toDouble(), 2.0), 0.5)
+        val lastToMid = (
+                (lastLandmark.coordinate.x - middleLandmark.coordinate.x).toDouble().pow(2.0)
+                    + (lastLandmark.coordinate.y - middleLandmark.coordinate.y).toDouble().pow(2.0)
+                ).pow(0.5)
 
-        val firstToLast = pow(
-                pow((firstLandmark.coordinate.x - lastLandmark.coordinate.x).toDouble(), 2.0)
-                        + pow((firstLandmark.coordinate.y - lastLandmark.coordinate.y).toDouble(), 2.0), 0.5)
+        val firstToLast = (
+                (firstLandmark.coordinate.x - lastLandmark.coordinate.x).toDouble().pow(2.0)
+                    + (firstLandmark.coordinate.y - lastLandmark.coordinate.y).toDouble().pow(2.0)
+                ).pow(0.5)
 
         // 第二余弦定理でcosΘを計算
-        val angle = (pow(firstToMid, 2.0) + pow(lastToMid, 2.0) - pow(firstToLast, 2.0)) / (2 * firstToMid * lastToMid);
+        val angle = (firstToMid.pow(2.0) + lastToMid.pow(2.0) - firstToLast.pow(2.0)) / (2 * firstToMid * lastToMid)
 
         // Θを取得
-        val angleRad = acos(angle);
+        val angleRad = kotlin.math.acos(angle)
 
         // ラジアンから度に変換
-        var result = angleRad * 180 / kotlin.math.PI;
+        var result = angleRad * 180 / kotlin.math.PI
 
         // 180度以上になったら計算順が逆だったことになるので反転させる
-        if (result > 180) { result = (360.0 - result); }
+        if (result > 180) { result = (360.0 - result) }
 
         // 小数点四捨五入
-        return result.roundToInt();
+        return result.roundToInt()
     }
 }

@@ -20,6 +20,8 @@ class FlChartRepository {
       lineTouchData: _lineTouchData,
       titlesData: _titlesData,
       lineBarsData: _getLineBarData(dataList),
+      betweenBarsData: dataList.isNotEmpty && showComparisonData ? [_betWeenBarsData] : null,
+      gridData: _flGridData,
       maxX: 100,
       minX: 0,
       maxY: 180,
@@ -55,29 +57,28 @@ class FlChartRepository {
   List<LineChartBarData> _getLineBarData(List dataList) {
     List<LineChartBarData> result = [];
     if (showComparisonData) {
-      result.add(_getLineChartBarData(GlobalVar.comparisonData));
+      result.add(_getLineChartBarData(GlobalVar.comparisonData, Colors.black54));
     }
     if (dataList.isNotEmpty) {
-      result.add(_getLineChartBarData(dataList));
+      result.add(_getLineChartBarData(dataList, Colors.orange.withOpacity(0.8)));
     }
     return result;
   }
 
   // グラフにするデータを設定
-  LineChartBarData _getLineChartBarData(List list) {
+  LineChartBarData _getLineChartBarData(List list, Color color) {
     return LineChartBarData(
-        isCurved: true,
-        barWidth: 4,
-        dotData: FlDotData(show: false),
-        belowBarData: BarAreaData(show: false),
-        spots: _flSpotDataExtraction(list, 0)
+      isCurved: true,
+      barWidth: 2,
+      dotData: FlDotData(show: false),
+      color: color,
+      spots: _flSpotDataExtraction(list, 0),
     );
   }
 
   // 左のタイトルに表示するテキストを設定
   Widget _leftTitleWidgets(double value, TitleMeta meta) {
     const style = TextStyle(
-      color: Color(0xff75729e),
       fontWeight: FontWeight.bold,
       fontSize: 14,
     );
@@ -110,9 +111,8 @@ class FlChartRepository {
   // 下のタイトルに表示するテキストの設定
   Widget _bottomTitleWidgets(double value, TitleMeta meta) {
     const style = TextStyle(
-      color: Color(0xff72719b),
       fontWeight: FontWeight.bold,
-      fontSize: 16,
+      fontSize: 14,
     );
     Widget text;
     switch (value.toInt()) {
@@ -139,10 +139,25 @@ class FlChartRepository {
 
   // 下のタイトルを設定
   SideTitles get _bottomTitles => SideTitles(
-      showTitles: true,
-      reservedSize: 32,
-      interval: 1,
-      getTitlesWidget: _bottomTitleWidgets
+    showTitles: true,
+    reservedSize: 32,
+    interval: 1,
+    getTitlesWidget: _bottomTitleWidgets,
+  );
+
+  BetweenBarsData get _betWeenBarsData => BetweenBarsData(
+    fromIndex: 0,
+    toIndex: 1,
+    color: Colors.orangeAccent.withOpacity(0.3)
+  );
+
+  FlGridData get _flGridData => FlGridData(
+    show: true,
+    drawVerticalLine: false,
+    horizontalInterval: 1,
+    checkToShowHorizontalLine: (double value) {
+      return value == 80 || value == 100 || value == 120 || value == 140 || value == 160;
+    }
   );
 
   // データ抽出

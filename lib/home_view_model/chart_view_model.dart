@@ -14,9 +14,10 @@ class ChartViewModel extends ConsumerWidget {
     List dataList = ref.watch(dataListProvider).dataList;
     double screenWidth  = GlobalVar.screenWidth;
 
-    return SizedBox(
+    return Container(
       height: 200,
-      width: screenWidth-60,
+      width: screenWidth-50,
+      margin: const EdgeInsets.only(top: 4, right: 8),
       child: LineChart(
         FlChartRepository(
             showComparisonData: true,
@@ -26,8 +27,3 @@ class ChartViewModel extends ConsumerWidget {
     );
   }
 }
-/*
-dataList.isEmpty
-? chart.LineChart(_createInitChart())
-          : chart.LineChart(_createDataList(dataList)
- */
