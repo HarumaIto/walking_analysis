@@ -67,6 +67,12 @@ flutter_native_splash:
   color: "#FFFFFF"
   fullscreen: true
 
+# [0.9.8+1]のバージョンだと
+# [WidgetsFlutterBinding.ensureInitialized()]こいつに対してエラーが発生するから
+dependency_overrides:
+  camera_android: 0.9.7+1
+  camera_avfoundation: 0.9.7+1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

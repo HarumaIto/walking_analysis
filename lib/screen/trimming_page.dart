@@ -9,6 +9,7 @@ import 'package:walking_analysis/utility/file_processor.dart';
 
 import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
+import '../repository/thumbnail_repository.dart';
 import '../widget/rangeslider.dart';
 import 'main_page.dart';
 
@@ -43,26 +44,6 @@ class _TrimmingPageState extends State<TrimmingPage> {
     fillColor: Colors.grey[200],
     filled: true,
   );
-
-  void finishedDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text("Flutrim"),
-          content: const Text("Finished!"),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Close"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   String durationFormatter(Duration dur) {
     return dur.toString().substring(
@@ -129,21 +110,17 @@ class _TrimmingPageState extends State<TrimmingPage> {
     );
 
     _flutterFFmpeg
-        .execute('-i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
+        .execute('-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
         .then((value) {
-      if (widget.source == ImageSource.camera) saveVideoTaken(outPath);
-      print('Got value $value');
       setState(() {
-        print('Video is saved');
         progress = false;
-        finishedDialog(context);
       });
+      if (widget.source == ImageSource.camera) saveVideoTaken(outPath);
+      createThumbnail(outPath);
       Navigator.push(
           context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
       );
-    }).catchError((error) {
-      print('Error');
-    });
+    }).catchError((error) {});
   }
 
   @override
@@ -189,7 +166,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Container(
+        child: SizedBox(
           height: height,
           width: double.infinity,
           child: _videoPlayerController.value.isInitialized
@@ -218,7 +195,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
                 top: height / 1.8,
                 child: Container(
                   color: Colors.black45,
-                  padding: EdgeInsets.all(6.0),
+                  padding: const EdgeInsets.all(6.0),
                   child: Text(
                     durationFormatter(position),
                     textAlign: TextAlign.center,
@@ -314,7 +291,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
                         children: <Widget>[
                           Column(
                             children: <Widget>[
-                              const Text('Start', style: TextStyle(fontSize: 15)),
+                              const Text('START', style: TextStyle(fontSize: 14)),
                               const SizedBox(height: 5,),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -325,7 +302,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                     color: Colors.grey,
                                     width: 20,
                                     height: 23,
-                                    padding: EdgeInsets.all(0),
+                                    padding: const EdgeInsets.all(0),
                                     child: IconButton(
                                       icon: const Icon(
                                         Icons.remove,
@@ -341,10 +318,10 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                     color: Colors.grey,
                                     width: 100,
                                     height: 23,
-                                    padding: EdgeInsets.all(0.0),
+                                    padding: const EdgeInsets.all(0.0),
                                     child: TextField(
                                       enabled: false,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 18,
                                           color: Colors.black),
                                       textAlign: TextAlign.center,
@@ -356,16 +333,16 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                     color: Colors.grey,
                                     width: 20,
                                     height: 23,
-                                    padding: EdgeInsets.all(0),
+                                    padding: const EdgeInsets.all(0),
                                     child: IconButton(
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.add,
                                         color: Colors.white,
                                         size: 20,
                                       ),
                                       onPressed: () => incSecond('start'),
                                       padding:
-                                      EdgeInsets.fromLTRB(0, 0, 12, 0),
+                                      const EdgeInsets.fromLTRB(0, 0, 12, 0),
                                     ),
                                   ),
                                 ],
@@ -374,7 +351,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
                           ),
                           Column(
                             children: <Widget>[
-                              const Text('End', style: TextStyle(fontSize: 15)),
+                              const Text('END', style: TextStyle(fontSize: 14)),
                               const SizedBox(height: 5,),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -385,9 +362,9 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                     color: Colors.grey,
                                     width: 20,
                                     height: 23,
-                                    padding: EdgeInsets.all(0),
+                                    padding: const EdgeInsets.all(0),
                                     child: IconButton(
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.remove,
                                         color: Colors.white,
                                         size: 20,
@@ -401,10 +378,10 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                     color: Colors.grey,
                                     width: 100,
                                     height: 23,
-                                    padding: EdgeInsets.all(0.0),
+                                    padding: const EdgeInsets.all(0.0),
                                     child: TextField(
                                       enabled: false,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 18,
                                           color: Colors.black),
                                       textAlign: TextAlign.center,
@@ -416,9 +393,9 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                     color: Colors.grey,
                                     width: 20,
                                     height: 23,
-                                    padding: EdgeInsets.all(0),
+                                    padding: const EdgeInsets.all(0),
                                     child: IconButton(
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.add,
                                         color: Colors.white,
                                         size: 20,
@@ -467,18 +444,18 @@ class _TrimmingPageState extends State<TrimmingPage> {
                             ),
                             onPressed: onTrim,
                             child: const Text(
-                              'Trim',
+                              'トリミング',
                               style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white),
                             ),
                           ),
-                          RaisedButton(
+                          ElevatedButton(
                             onPressed: () {
                               setState(() {
                                 _videoPlayerController
-                                    .seekTo(Duration(seconds: 0));
+                                    .seekTo(const Duration(seconds: 0));
                                 _videoPlayerController.pause();
                                 gradesRange = RangeValues(
                                     0,
@@ -495,8 +472,8 @@ class _TrimmingPageState extends State<TrimmingPage> {
                                         gradesRange.end.truncate()));
                               });
                             },
-                            color: Colors.lightBlueAccent.withOpacity(0.8),
-                            child: Icon(Icons.refresh,),
+                            style: ElevatedButton.styleFrom(primary: Colors.lightBlueAccent.withOpacity(0.8)),
+                            child: const Icon(Icons.refresh,),
                           ),
                         ],
                       )

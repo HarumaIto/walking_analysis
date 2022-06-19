@@ -3,20 +3,16 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walking_analysis/model/preference_keys.dart';
-import 'package:walking_analysis/repository/sharedpref_repository.dart';
 
 import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
+import '../repository/thumbnail_repository.dart';
 import '../repository/permission_repository.dart';
 import '../screen/introduction/explain_condition.dart';
 import '../screen/main_page.dart';
 import '../screen/trimming_page.dart';
 import '../state/home_providers.dart';
-import '../utility/create_thumbnail.dart';
 import '../utility/file_processor.dart';
 import '../widget/original_icon_button.dart';
 
@@ -61,8 +57,6 @@ class PrepareViewModel extends ConsumerWidget {
               // 機械学習用で複製する
               File(xFile.path).copySync(VideoFilePath.mlInputPath);
               ref.read(prepareStateProvider.notifier).state = false;
-              // ログ用のサムネイルを作成
-              createThumbnail(ref, inputThumbProvider, xFile.path);
 
               // トリミング確認用ダイアログ
               showDialog(context: context, builder: (_) {
@@ -73,6 +67,8 @@ class PrepareViewModel extends ConsumerWidget {
                       child: const Text("いいえ", style: TextStyle(color: Colors.blueAccent)),
                       onPressed: () {
                         if (source == ImageSource.camera) saveVideoTaken(xFile.path);
+                        // ログ用のサムネイルを作成
+                        createThumbnail(xFile.path);
                         Navigator.pop(context);
                         ref.read(processStateProvider.notifier).state = true;
                         Navigator.of(context).pushAndRemoveUntil(

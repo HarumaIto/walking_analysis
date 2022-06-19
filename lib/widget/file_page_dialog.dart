@@ -25,7 +25,7 @@ class FileHandlingDialog extends StatelessWidget {
   // 選択されたファイルを表示
   void _onDisplay(WidgetRef ref) {
     // 拡張子を取得
-    String extension = getExtension(fileName);
+    String extension = getExtensionForPath(fileName);
 
     GlobalVar.previewFilePath = filePath;
 
@@ -97,7 +97,7 @@ class FileHandlingDialog extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context1);
-                          if (checkInputFileName(inputText, getExtension(fileName), dir)) {
+                          if (checkInputFileName(inputText, getExtensionForPath(fileName), dir)) {
                             _changeName();
                           } else {
                             showDialog(

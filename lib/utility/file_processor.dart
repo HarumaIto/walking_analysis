@@ -8,6 +8,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:walking_analysis/repository/toast_repository.dart';
+
+import 'package:intl/intl.dart' as intl;
 
 import '../model/preference_keys.dart';
 import '../repository/sharedpref_repository.dart';
@@ -28,9 +31,22 @@ Future<String> getTemporaryDirectoryPath() async {
 /// 撮影した動画を写真またはギャラリーへ保存
 void saveVideoTaken(String path) {
   SharedPreferences pref = UserSettingPreference().prefs!;
+  // 年月日時間を取得
+  DateTime now = DateTime.now();
+  String formattedDate = intl.DateFormat('yyyyMMddhhmmss').format(now);
+  final newFilePath = '${getDirectoryForPath(path)}/$formattedDate.mp4';
+  // 一時的に保存用で別名ファイルを作成
+  File(path).copySync(newFilePath);
   bool? isSave = pref.getBool(PreferenceKeys.isSaveVideoTaken.name);
   if (isSave != null && isSave) {
-    GallerySaver.saveVideo(path);
+    // ギャラリーや写真に動画を保存
+    GallerySaver.saveVideo(newFilePath).then((value) {
+      if (value!) {
+        showToast('撮影した動画を保存しました');
+        // 一時的に作成したファイルを削除
+        File(newFilePath).delete(recursive: true);
+      }
+    });
   }
 }
 
@@ -55,9 +71,19 @@ void getFileList(WidgetRef ref, Directory dir) async {
   ref.read(fileListProvider.notifier).setList(list);
 }
 
+String getDirectoryForPath(String path) {
+  final splitList = path.split('/');
+  int length = splitList.length;
+  String result = splitList[0];
+  for (int i=1; i<length-1; i++) {
+    result = '$result/${splitList[i]}';
+  }
+  return result;
+}
+
 /// 拡張子を取得
-String getExtension(String name) {
-  final splitList = name.split('.');
+String getExtensionForPath(String path) {
+  final splitList = path.split('.');
   return splitList[splitList.length - 1];
 }
 

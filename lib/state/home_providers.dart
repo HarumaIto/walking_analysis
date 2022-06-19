@@ -50,8 +50,8 @@ final inputThumbProvider = ChangeNotifierProvider((_) => InputThumbModel());
 class InputThumbModel extends ChangeNotifier {
   Uint8List? bytes;
 
-  void setThumbnail(Uint8List bytes) {
-    bytes = bytes;
+  void setThumbnail(Uint8List data) {
+    bytes = data;
     notifyListeners();
   }
 

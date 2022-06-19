@@ -17,34 +17,35 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  runZonedGuarded<Future<void>>(() async {
-    // ここで非同期処理を行えるようにする
-    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  // ここで非同期処理を行えるようにする
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
-    // ステータスバー & ナビゲーションバーの設定
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  // Firebaseを初期化
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-    // ユーザー設定の初期化
-    UserSettingPreference userSettingPreference = UserSettingPreference();
-    userSettingPreference.prefs = await SharedPreferences.getInstance();
-    userSettingPreference.initUserSetting();
+  // crashlyticsにエラーを送信する
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-    // pathの設定
-    VideoFilePath.trimmingInputPath = '${(await getExternalStorageDirectory())!.path}/select.mp4';
-    VideoFilePath.mlInputPath = '${(await getExternalStorageDirectory())!.path}/input.mp4';
-    VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
-    // 比較用データの設定
-    GlobalVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-    // Firebaseを初期化
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  // ステータスバー & ナビゲーションバーの設定
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // crashlyticsにエラーを送信する
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  // ユーザー設定の初期化
+  UserSettingPreference userSettingPreference = UserSettingPreference();
+  userSettingPreference.prefs = await SharedPreferences.getInstance();
+  userSettingPreference.initUserSetting();
 
+  // pathの設定
+  VideoFilePath.trimmingInputPath = '${(await getExternalStorageDirectory())!.path}/select.mp4';
+  VideoFilePath.mlInputPath = '${(await getExternalStorageDirectory())!.path}/input.mp4';
+  VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
+  // 比較用データの設定
+  GlobalVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
+
+  runZonedGuarded(() {
     // 最後にUIを構築
     runApp(
       const ProviderScope(

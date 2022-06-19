@@ -44,7 +44,7 @@ class HomePage extends ConsumerWidget {
             const SizedBox(height: 8,),
             CardTemplate(
                 title: '① 選択してください',
-                child: PrepareViewModel()
+                child: const PrepareViewModel()
             ),
             CardTemplate(
                 title: '② 機械学習',
