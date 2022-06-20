@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:walking_analysis/model/video_file_path.dart';
+import 'package:walking_analysis/repository/toast_repository.dart';
 import 'package:walking_analysis/utility/file_processor.dart';
 import 'package:walking_analysis/widget/original_icon_button.dart';
 
@@ -89,9 +90,10 @@ class ResultViewModel extends ConsumerWidget {
               if (checkInputFileName(newFileName, VideoFilePath.mlOutputPath, dir!)) {
                 String dirPath = dir.path;
                 String filePath = '$dirPath/$newFileName.mp4';
-                File(VideoFilePath.mlOutputPath)
-                    .copy(filePath)
-                    .then((value) => saveVideoState = false);
+                File(VideoFilePath.mlOutputPath).copy(filePath).then((value) {
+                  saveVideoState = false;
+                  showToast('動画を保存しました');
+                });
               } else {
                 showDialog(context: context, builder: (context) {
                   return AlertDialog(

@@ -53,8 +53,11 @@ void saveVideoTaken(String path) {
 /// 機械学習で使った連番画像を削除
 void deleteCache() async {
   // ディレクトリ削除
-  String dirPath = await getTemporaryDirectoryPath();
-  Directory(dirPath).deleteSync(recursive: true);
+  Directory directory = await getTemporaryDirectory();
+  int length = directory.listSync(followLinks: false).length;
+  Directory(directory.path).delete(recursive: true).then((value) =>
+      showToast('$length個の一時的ファイルを削除しました')
+  );
 }
 
 /// ディレクトリからファイルを取得する
@@ -71,6 +74,7 @@ void getFileList(WidgetRef ref, Directory dir) async {
   ref.read(fileListProvider.notifier).setList(list);
 }
 
+/// pathからdirectoryの部分を取得する
 String getDirectoryForPath(String path) {
   final splitList = path.split('/');
   int length = splitList.length;
@@ -79,6 +83,12 @@ String getDirectoryForPath(String path) {
     result = '$result/${splitList[i]}';
   }
   return result;
+}
+
+/// pathからfile名を取得
+String getFileNameForPath(String path) {
+  final splitList = path.split('/');
+  return splitList[splitList.length-1];
 }
 
 /// 拡張子を取得

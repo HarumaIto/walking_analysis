@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walking_analysis/repository/toast_repository.dart';
 
 import '../model/global_variable.dart';
 import '../state/file_library_provider.dart';
@@ -38,16 +39,19 @@ class FileHandlingDialog extends StatelessWidget {
 
   // ファイル削除
   void _onDelete() {
-    File(filePath).deleteSync(recursive: true);
-    getFileList(ref, dir);
+    File(filePath).delete(recursive: true).then((value) {
+      getFileList(ref, dir);
+      showToast('${getFileNameForPath(filePath)}を削除しました');
+    });
   }
 
   // ファイル名変更
   void _changeName() {
     String newFilePath = '$dirPath/$inputText.csv';
-    File(filePath).copySync(newFilePath);
-    _onDelete();
-    getFileList(ref, dir);
+    File(filePath).rename(newFilePath).then((value) {
+      getFileList(ref, dir);
+      showToast('${getFileNameForPath(newFilePath)}に変更しました');
+    });
   }
 
   @override
@@ -82,7 +86,6 @@ class FileHandlingDialog extends StatelessWidget {
                   return AlertDialog(
                     title: const Text('ファイル名を入力'),
                     content: TextField(
-                      obscureText: true,
                       decoration: const InputDecoration(
                         hintText: 'ファイル名を入力してください',
                         border: OutlineInputBorder(),

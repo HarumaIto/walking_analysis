@@ -46,23 +46,6 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
     return false;
   }
 
-  /*
-  // チャートを作成する
-  List<chart.Series<AngleData, int>> _createDataList() {
-    List<AngleData> dataList = dataExtraction(getDataForFileCSV(GlobalVar.previewFilePath), 0);
-
-    return [
-      chart.Series<AngleData, int>(
-          id: 'preview chart',
-          domainFn: (data, _) => data.count,
-          measureFn: (data, _) => data.value,
-          data: dataList
-      )
-    ];
-  }
-   */
-
-
   // 動画を表示するWidgetを作成する
   VideoPlayerController _createVideoController(String filePath) {
     File file = File(filePath);
@@ -152,8 +135,7 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                                   ),
                                 );
                               }
-                          )
-                              : Container(
+                          ) : Container(
                             alignment: Alignment.center,
                             child: const Text('アプリで作成されたファイルがありません'),
                           )
