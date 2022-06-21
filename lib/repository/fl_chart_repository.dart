@@ -8,10 +8,12 @@ class FlChartRepository {
 
   final bool showComparisonData;
   final List dataList;
+  final int columnNumber;
 
   FlChartRepository({
     required this.showComparisonData,
-    required this.dataList
+    required this.dataList,
+    required this.columnNumber
   });
 
   // チャートを作成
@@ -25,7 +27,7 @@ class FlChartRepository {
       maxX: 100,
       minX: 0,
       maxY: 180,
-      minY: 60,
+      minY: 80,
     );
   }
 
@@ -72,7 +74,7 @@ class FlChartRepository {
       barWidth: 2,
       dotData: FlDotData(show: false),
       color: color,
-      spots: _flSpotDataExtraction(list, 0),
+      spots: _flSpotDataExtraction(list, columnNumber),
     );
   }
 
@@ -84,11 +86,11 @@ class FlChartRepository {
     );
     String text;
     switch (value.toInt()) {
-      case 60:
-        text = '60';
+      case 80:
+        text = '80';
         break;
-      case 120:
-        text = '120';
+      case 130:
+        text = '130';
         break;
       case 180:
         text = '180';
@@ -156,7 +158,7 @@ class FlChartRepository {
     drawVerticalLine: false,
     horizontalInterval: 1,
     checkToShowHorizontalLine: (double value) {
-      return value == 80 || value == 100 || value == 120 || value == 140 || value == 160;
+      return value == 100 || value == 120 || value == 140 || value == 160;
     }
   );
 

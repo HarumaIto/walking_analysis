@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:walking_analysis/model/video_file_path.dart';
-import 'package:walking_analysis/repository/fl_chart_repository.dart';
+import 'package:walking_analysis/widget/complex_chart.dart';
 
 import '../../model/global_variable.dart';
 import '../../state/file_library_provider.dart';
@@ -159,16 +158,9 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                         else if(fileExtension == PreviewModel.CSV_EXTENSION)
                           Column(
                             children: [
-                              Container(
-                                height: 200,
-                                width: double.infinity,
-                                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-                                child: LineChart(
-                                    FlChartRepository(
-                                      showComparisonData: false,
-                                      dataList: getDataForFileCSV(GlobalVar.previewFilePath)
-                                    ).createChartData()
-                                ),
+                              ComplexChart(
+                                dataList: getDataForFileCSV(GlobalVar.previewFilePath),
+                                showComparisonData: false,
                               ),
                               Container(
                                   width: double.infinity,
