@@ -31,6 +31,7 @@ class MlRepository {
   Future createImages() async {
     ref.read(restartStateProvider.notifier).state = false;
     ref.read(progressValProvider.notifier).setIsDeterminate(false);
+    ref.read(mlStateProvider.notifier).state = '入力処理中';
 
     VideoToImage videoToImage = VideoToImage(VideoFilePath.mlInputPath);
     String localDirectoryPath = await getTemporaryDirectoryPath();
@@ -42,6 +43,7 @@ class MlRepository {
   // 姿勢推定を実行
   void _processImage(List pathNameList) async {
     ref.read(progressValProvider.notifier).setIsDeterminate(true);
+    ref.read(mlStateProvider.notifier).state = 'AI分析中';
 
     // 機械学習処理を初期化
     channel.invokeMethod("create", ref.read(useModelProvider));
@@ -87,6 +89,7 @@ class MlRepository {
 
     channel.invokeMethod('close');
     ref.read(progressValProvider.notifier).setIsDeterminate(false);
+    ref.read(mlStateProvider.notifier).state = '出力処理中';
 
     String inputPath = ImagesInfo.IMAGES_PATH!;
     int frameNum = ImagesInfo.FRAME_NUM!;
@@ -111,6 +114,7 @@ class MlRepository {
     ref.read(progressValProvider.notifier).setIsDeterminate(true);
     ref.read(restartStateProvider.notifier).state = true;
     ref.read(saveVideoStateProvider.notifier).state = true;
+    ref.read(mlStateProvider.notifier).state = '';
   }
 
   // 元画像と機械学習の結果を合成して書き換える

@@ -36,6 +36,9 @@ final useModelProvider = StateProvider((_) {
   }
 });
 
+// 機械学習時に今何をしているか表示
+final mlStateProvider = StateProvider((_) => '');
+
 // プログレスバー用
 final progressValProvider = ChangeNotifierProvider((_) => ProgressValModel());
 

@@ -18,6 +18,7 @@ class MlViewModel extends ConsumerWidget {
     final progressVal = ref.watch(progressValProvider).value;
     final isDeterminate = ref.watch(progressValProvider).isDeterminate;
     final percentProgress = (ref.watch(progressValProvider).value * 100).round();
+    final mlState = ref.watch(mlStateProvider);
 
     double width = GlobalVar.screenWidth;
 
@@ -47,7 +48,13 @@ class MlViewModel extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('$selectedValモデル: $percentProgress%', style: const TextStyle(fontSize: 12),),
+                  Row(
+                    children: [
+                      Text('$selectedValモデル: $percentProgress%', style: const TextStyle(fontSize: 12),),
+                      const Spacer(),
+                      Text(mlState, style: const TextStyle(fontSize: 12),)
+                    ],
+                  ),
                   const SizedBox(height: 2,),
                   Text('実行時間: $runTime [ms]', style: const TextStyle(fontSize: 12),),
                 ],
