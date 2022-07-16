@@ -7,8 +7,15 @@ import '../repository/ml_repository.dart';
 import '../state/home_providers.dart';
 import '../widget/original_icon_button.dart';
 
+class SettingItem {
+  bool isExpanded;
+  String title;
+  bool isChecked;
+  SettingItem(this.isExpanded, this.title, this.isChecked);
+}
+
 class MlViewModel extends ConsumerWidget {
-  const MlViewModel({Key? key}) : super(key: key);
+  MlViewModel({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

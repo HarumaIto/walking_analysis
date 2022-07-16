@@ -8,12 +8,14 @@ class FlChartRepository {
 
   final bool showComparisonData;
   final List dataList;
-  final int columnNumber;
+  final int columnCompNumber;
+  final int columnDataNumber;
 
   FlChartRepository({
     required this.showComparisonData,
     required this.dataList,
-    required this.columnNumber
+    required this.columnCompNumber,
+    required this.columnDataNumber
   });
 
   // チャートを作成
@@ -59,22 +61,22 @@ class FlChartRepository {
   List<LineChartBarData> _getLineBarData(List dataList) {
     List<LineChartBarData> result = [];
     if (showComparisonData) {
-      result.add(_getLineChartBarData(GlobalVar.comparisonData, Colors.black54));
+      result.add(_getLineChartBarData(GlobalVar.comparisonData, Colors.black54, columnCompNumber));
     }
     if (dataList.isNotEmpty) {
-      result.add(_getLineChartBarData(dataList, Colors.orange.withOpacity(0.8)));
+      result.add(_getLineChartBarData(dataList, Colors.orange.withOpacity(0.8), columnDataNumber));
     }
     return result;
   }
 
   // グラフにするデータを設定
-  LineChartBarData _getLineChartBarData(List list, Color color) {
+  LineChartBarData _getLineChartBarData(List list, Color color, int index) {
     return LineChartBarData(
       isCurved: true,
       barWidth: 2,
       dotData: FlDotData(show: false),
       color: color,
-      spots: _flSpotDataExtraction(list, columnNumber),
+      spots: _flSpotDataExtraction(list, index),
     );
   }
 

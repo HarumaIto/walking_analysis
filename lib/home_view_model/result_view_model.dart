@@ -21,8 +21,8 @@ class ResultViewModel extends ConsumerWidget {
 
   void processResult(List list, WidgetRef ref) {
     // データ取得
-    List dataList = dataExtraction(list);
-    List compDataList = dataExtraction(GlobalVar.comparisonData);
+    List dataList = dataExtraction(list, GlobalVar.leftIndex);
+    List compDataList = dataExtraction(GlobalVar.comparisonData, 0);
 
     // データ量の少ない方を調整をする
     dataList.length < compDataList.length
@@ -52,10 +52,11 @@ class ResultViewModel extends ConsumerWidget {
   }
 
   // データ抽出
-  List dataExtraction(List list) {
+  List dataExtraction(List list, int index) {
     List results = [];
     for (int i=0; i < list.length; i++) {
-      results.add(list[i][0]);
+      // indexは左右のこと
+      results.add(list[i][index]);
     }
     return results;
   }
@@ -126,10 +127,11 @@ class ResultViewModel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(isCheckReversal);
     String score = ref.watch(scoreProvider);
     List dataList = ref.watch(dataListProvider).dataList;
     saveVideoState = ref.watch(saveVideoStateProvider);
-    if (dataList.isNotEmpty && score == '-----') processResult(dataList, ref);
+    if (dataList.isNotEmpty) processResult(dataList, ref);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

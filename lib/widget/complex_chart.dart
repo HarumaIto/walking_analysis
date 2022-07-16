@@ -8,12 +8,12 @@ class ComplexChart extends StatelessWidget {
   final bool showComparisonData;
   final List dataList;
 
-  ComplexChart({
+  const ComplexChart({
     required this.dataList,
     required this.showComparisonData,
     Key? key}) : super(key: key);
 
-  List<Widget> getChildren(double height, double width, List dataList) {
+  List<Widget> createChildren(double height, double width, List dataList) {
     return [
       SizedBox(
         height: height,
@@ -22,7 +22,8 @@ class ComplexChart extends StatelessWidget {
             FlChartRepository(
               showComparisonData: showComparisonData,
               dataList: dataList,
-              columnNumber: 0,
+              columnCompNumber: 0,
+              columnDataNumber: GlobalVar.leftIndex,
             ).createChartData()
         ),
       ),
@@ -33,7 +34,8 @@ class ComplexChart extends StatelessWidget {
             FlChartRepository(
               showComparisonData: showComparisonData,
               dataList: dataList,
-              columnNumber: 1,
+              columnCompNumber: 1,
+              columnDataNumber: GlobalVar.rightIndex,
             ).createChartData()
         ),
       )
@@ -49,14 +51,14 @@ class ComplexChart extends StatelessWidget {
         margin: const EdgeInsets.only(top: 4, right: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: getChildren(200, screenWidth/2.3, dataList),
+          children: createChildren(200, screenWidth/2.3, dataList),
         ),
       );
     } else {
       return Container(
           margin: const EdgeInsets.only(top: 6, right: 12),
           child: Column(
-            children: getChildren(120, screenWidth-1.2, dataList),
+            children: createChildren(120, screenWidth-1.2, dataList),
           )
       );
     }

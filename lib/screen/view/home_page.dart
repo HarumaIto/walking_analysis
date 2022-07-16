@@ -48,11 +48,11 @@ class HomePage extends ConsumerWidget {
             ),
             CardTemplate(
                 title: '② 機械学習',
-                child: const MlViewModel()
+                child: MlViewModel()
             ),
             CardTemplate(
                 title: '③ 結果のグラフを表示',
-                child: ChartViewModel()
+                child: const ChartViewModel()
             ),
             CardTemplate(
                 title: '④ 最終結果',

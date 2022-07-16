@@ -48,6 +48,9 @@ final dataListProvider = ChangeNotifierProvider((_) => DataListModel());
 // 結果のスコア用
 final scoreProvider = StateProvider((_) => '-----');
 
+// 結果の設定用
+final isCheckReversal = StateProvider((_) => false);
+
 final inputThumbProvider = ChangeNotifierProvider((_) => InputThumbModel());
 
 class InputThumbModel extends ChangeNotifier {

@@ -179,7 +179,7 @@ Future<List> getDataForAssetsCSV(String filePath) async {
 
   for (String line in rows) {
     List<int> row = [];
-    for (String item in line.split(',')){
+    for (String item in line.split(',')) {
       row.add(double.parse(item).round());
     }
     data.add(row);
