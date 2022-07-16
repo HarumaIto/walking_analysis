@@ -25,8 +25,9 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   List nameList = [];
   List csvDataList = [];
   String fileName = '';
-  late VideoPlayerController previewController;
-  late VideoPlayerController outputController;
+  bool canCreateController = true;
+  VideoPlayerController? previewController;
+  VideoPlayerController? outputController;
 
   // ファイルがあるかチェックする
   bool _fileExist() {
@@ -46,9 +47,16 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   }
 
   // 動画を表示するWidgetを作成する
-  VideoPlayerController _createVideoController(String filePath) {
+  void _createVideoController(String filePath, int index) async {
     File file = File(filePath);
-    return VideoPlayerController.file(file)..initialize();
+    VideoPlayerController result = VideoPlayerController.file(file);
+    result.initialize().then((value) => setState(() {
+      if (index == 0) {
+        previewController = result;
+      } else if (index == 1) {
+        outputController = result;
+      }
+    }));
   }
 
   @override
@@ -58,17 +66,26 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
       dir = directory!;
       getFileList(ref, dir);
     });
-
-    outputController = _createVideoController(VideoFilePath.mlOutputPath);
+    _createVideoController(VideoFilePath.mlOutputPath, 1);
   }
 
   @override
   Widget build(BuildContext context) {
     final fileList = ref.watch(fileListProvider).fileNameList;
     final fileExtension = ref.watch(previewProvider).fileExtension;
+    bool initPrevController = false;
+    bool initOutputController = false;
 
-    if (fileExtension == PreviewModel.MP4_EXTENSION) {
-      previewController = _createVideoController(GlobalVar.previewFilePath);
+    if (fileExtension == PreviewModel.MP4_EXTENSION && canCreateController) {
+      canCreateController = false;
+      _createVideoController(GlobalVar.previewFilePath, 0);
+    }
+
+    if (previewController != null && previewController!.value.isInitialized) {
+      initPrevController = true ;
+    }
+    if (outputController != null && outputController!.value.isInitialized) {
+      initOutputController = true;
     }
 
     var usText = ["リスト更新", "キャッシュ削除"];
@@ -116,16 +133,19 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                           height: 24,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           child: OutlinedButton(
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (_)  {
-                                try {fileName = fileList[index];}
-                                catch(e){
-                                  print(e.toString());
-                                }
-                                return FileHandlingDialog(fileName, dir);
-                              },
-                            ),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (_)  {
+                                  try {fileName = fileList[index];}
+                                  catch(e){
+                                    print(e.toString());
+                                  }
+                                  return FileHandlingDialog(fileName, dir);
+                                },
+                              );
+                              canCreateController = true;
+                            },
                             style: TextButton.styleFrom(
                               primary: Colors.black,
                             ),
@@ -169,57 +189,62 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
                         ],
                       )
                     else if(fileExtension == PreviewModel.MP4_EXTENSION)
-                      Row(
+                      initPrevController ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Container(
-                            height: previewController.value.size.height/6,
-                            width: previewController.value.size.width/6,
+                            height: previewController!.value.size.height/7,
+                            width: previewController!.value.size.width/7,
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             alignment: Alignment.center,
-                            child: VideoPlayer(previewController),
+                            child: VideoPlayer(previewController!),
                           ),
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: IconButton(
-                              onPressed: () {previewController.play();},
+                              onPressed: () {previewController!.play();},
                               icon: const Icon(Icons.restart_alt),
                             ),
                           ),
                         ],
-                      )
+                      ) : const Center(
+                        child: CircularProgressIndicator(),
+                      ),
                   ],
                 ),
               ),
             ),
             CardTemplate(
               title: '前回の実行後の動画',
-              child: File(VideoFilePath.mlOutputPath).existsSync() ? Row(
+              child: File(VideoFilePath.mlOutputPath).existsSync()
+                ? initOutputController ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Container(
-                      height: outputController.value.size.height/6,
-                      width: outputController.value.size.width/6,
+                      height: outputController!.value.size.height/7,
+                      width: outputController!.value.size.width/7,
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       alignment: Alignment.center,
-                      child: VideoPlayer(outputController),
+                      child: VideoPlayer(outputController!),
                     ),
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: IconButton(
-                        onPressed: () {outputController.play();},
+                        onPressed: () {outputController!.play();},
                         icon: const Icon(Icons.restart_alt),
                       ),
                     ),
                   ],
+                ) :  const Center(
+                  child: CircularProgressIndicator(),
                 ) : Container(
-                alignment: Alignment.center,
-                child: const Text('アプリで作成されたファイルがありません'),
-              ),
+                  alignment: Alignment.center,
+                  child: const Text('アプリで作成されたファイルがありません'),
+                ),
             ),
             const SizedBox(height: 8,),
           ],
