@@ -9,6 +9,7 @@ class RestartRepository {
     ref.read(prepareStateProvider.notifier).state = true;
     ref.read(processStateProvider.notifier).state = false;
     ref.read(progressValProvider.notifier).reset();
+    ref.read(positionSliderProvider.notifier).state = 0;
     ref.read(dataListProvider.notifier).reset();
     ref.read(scoreProvider.notifier).state = '-----';
     ref.read(saveVideoStateProvider.notifier).state = false;

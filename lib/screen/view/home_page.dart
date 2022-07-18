@@ -52,7 +52,7 @@ class HomePage extends ConsumerWidget {
             ),
             CardTemplate(
                 title: '③ 結果のグラフを表示',
-                child: const ChartViewModel()
+                child: ChartViewModel()
             ),
             CardTemplate(
                 title: '④ 最終結果',

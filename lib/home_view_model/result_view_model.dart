@@ -45,10 +45,13 @@ class ResultViewModel extends ConsumerWidget {
     理由 : widgetのビルド中に状態を変更して、エラーが発生する
           機械学習処理で追加されるデータを複数ViewModelで参照し、同じタイミングで
           再描画しようとして発生するエラーに対応するため
+          さらに、再描画が続くのでif分で制御
      */
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(scoreProvider.notifier).state = score;
-    });
+    if (ref.watch(scoreProvider) != score) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(scoreProvider.notifier).state = score;
+      });
+    }
   }
 
   // データ抽出
@@ -61,8 +64,8 @@ class ResultViewModel extends ConsumerWidget {
     return results;
   }
 
+  // 動画保存用ダイアログ
   void saveVideoDialog(BuildContext context) async {
-    // 動画保存用ダイアログ
     DateTime now = DateTime.now();
     String formattedDate = intl.DateFormat('yyyy-MM-dd–hh-mm-ss').format(now);
     String newFileName = formattedDate;
@@ -128,10 +131,10 @@ class ResultViewModel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(isCheckReversal);
-    String score = ref.watch(scoreProvider);
-    List dataList = ref.watch(dataListProvider).dataList;
+    List dataList = ref.watch(dataListProvider).configuredDataList;
     saveVideoState = ref.watch(saveVideoStateProvider);
     if (dataList.isNotEmpty) processResult(dataList, ref);
+    String score = ref.watch(scoreProvider);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -16,10 +16,10 @@ class OriginalIconButton extends StatelessWidget {
     final List<Widget> _children = [
       ElevatedButton(
         onPressed: onPressed,
-        child: Icon(icon, color: Colors.orange),
         style: ElevatedButton.styleFrom(
           elevation: 4,
         ),
+        child: Icon(icon, color: Colors.orange),
       ),
       text,
     ];

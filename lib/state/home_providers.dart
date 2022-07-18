@@ -42,6 +42,9 @@ final mlStateProvider = StateProvider((_) => '');
 // プログレスバー用
 final progressValProvider = ChangeNotifierProvider((_) => ProgressValModel());
 
+// chartのデータの初期位置を変更
+final positionSliderProvider = StateProvider((_) => 0);
+
 // chartで使うデータ用
 final dataListProvider = ChangeNotifierProvider((_) => DataListModel());
 
@@ -51,6 +54,7 @@ final scoreProvider = StateProvider((_) => '-----');
 // 結果の設定用
 final isCheckReversal = StateProvider((_) => false);
 
+// 入力動画のサムネイル用
 final inputThumbProvider = ChangeNotifierProvider((_) => InputThumbModel());
 
 class InputThumbModel extends ChangeNotifier {
@@ -98,14 +102,21 @@ class ProgressValModel extends ChangeNotifier {
 
 class DataListModel extends ChangeNotifier {
   List dataList = [];
+  List configuredDataList = [];
 
   void setValue(List list) {
     dataList = list;
     notifyListeners();
   }
 
+  void setConfiguredData(List list) {
+    configuredDataList = list;
+    notifyListeners();
+  }
+
   void reset() {
     dataList = [];
+    configuredDataList = [];
     notifyListeners();
   }
 }

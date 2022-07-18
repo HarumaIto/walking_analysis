@@ -137,7 +137,7 @@ class ExplainConditionState extends State<ExplainCondition> {
                   }
                 });
               },
-              onDone: (){
+              onDone: () {
                 const PrepareViewModel().getVideo(widget.source, widget.ref, context);
               },
               back: const Text(

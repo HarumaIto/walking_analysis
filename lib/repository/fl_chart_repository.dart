@@ -82,10 +82,7 @@ class FlChartRepository {
 
   // 左のタイトルに表示するテキストを設定
   Widget _leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 14,
-    );
+    const style = TextStyle(fontSize: 12,);
     String text;
     switch (value.toInt()) {
       case 80:
@@ -101,7 +98,11 @@ class FlChartRepository {
         return Container();
     }
 
-    return Text(text, style: style, textAlign: TextAlign.center);
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 6,
+      child: Text(text, style: style, textAlign: TextAlign.center),
+    );
   }
 
   // 左のタイトルの設定
@@ -109,15 +110,12 @@ class FlChartRepository {
     getTitlesWidget: _leftTitleWidgets,
     showTitles: true,
     interval: 1,
-    reservedSize: 40,
+    reservedSize: 28,
   );
 
   // 下のタイトルに表示するテキストの設定
   Widget _bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 14,
-    );
+    const style = TextStyle(fontSize: 14,);
     Widget text;
     switch (value.toInt()) {
       case 0:
@@ -136,7 +134,7 @@ class FlChartRepository {
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
-      space: 10,
+      space: 4,
       child: text,
     );
   }
@@ -144,7 +142,6 @@ class FlChartRepository {
   // 下のタイトルを設定
   SideTitles get _bottomTitles => SideTitles(
     showTitles: true,
-    reservedSize: 32,
     interval: 1,
     getTitlesWidget: _bottomTitleWidgets,
   );

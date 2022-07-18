@@ -10,7 +10,6 @@ import '../model/video_file_path.dart';
 import '../repository/thumbnail_repository.dart';
 import '../repository/permission_repository.dart';
 import '../screen/introduction/explain_condition.dart';
-import '../screen/main_page.dart';
 import '../screen/trimming_page.dart';
 import '../state/home_providers.dart';
 import '../utility/file_processor.dart';
@@ -69,12 +68,9 @@ class PrepareViewModel extends ConsumerWidget {
                         if (source == ImageSource.camera) saveVideoTaken(xFile.path);
                         // ログ用のサムネイルを作成
                         createThumbnail(xFile.path);
-                        Navigator.pop(context);
+                        Navigator.pop(context); // ダイアログを閉じる
                         ref.read(processStateProvider.notifier).state = true;
-                        Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (_) => const MyMainPage(),
-                            ), (_) => false);
+                        Navigator.pop(context); // 説明ページを閉じる
                       },
                     ),
                     TextButton(

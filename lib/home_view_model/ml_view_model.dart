@@ -15,7 +15,7 @@ class SettingItem {
 }
 
 class MlViewModel extends ConsumerWidget {
-  MlViewModel({Key? key}) : super(key: key);
+  const MlViewModel({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
