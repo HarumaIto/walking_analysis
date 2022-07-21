@@ -1,14 +1,18 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 class PosePainter extends CustomPainter {
-  PosePainter(this.poses, this.absoluteImageSize, this.rotation);
 
-  final List<Pose> poses;
-  final Size absoluteImageSize;
-  final InputImageRotation rotation;
+  PosePainter(this.poses, this.absoluteImageSize, this.rotation,);
+
+  PosePainter.reset();
+
+  List<Pose>? poses;
+  Size? absoluteImageSize;
+  InputImageRotation? rotation;
 
   double translateX(
       double x, InputImageRotation rotation, Size size, Size absoluteImageSize) {
@@ -44,6 +48,13 @@ class PosePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (poses==null || absoluteImageSize==null || rotation==null) {
+      canvas.saveLayer(Rect.largest, Paint());
+      canvas.drawPaint(Paint()..blendMode = BlendMode.clear);
+      canvas.restore();
+      return;
+    }
+
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0
@@ -59,12 +70,12 @@ class PosePainter extends CustomPainter {
       ..strokeWidth = 3.0
       ..color = Colors.blueAccent;
 
-    for (final pose in poses) {
+    for (final pose in poses!) {
       pose.landmarks.forEach((_, landmark) {
         canvas.drawCircle(
             Offset(
-              translateX(landmark.x, rotation, size, absoluteImageSize),
-              translateY(landmark.y, rotation, size, absoluteImageSize),
+              translateX(landmark.x, rotation!, size, absoluteImageSize!),
+              translateY(landmark.y, rotation!, size, absoluteImageSize!),
             ),
             1,
             paint);
@@ -75,10 +86,10 @@ class PosePainter extends CustomPainter {
         final PoseLandmark joint1 = pose.landmarks[type1]!;
         final PoseLandmark joint2 = pose.landmarks[type2]!;
         canvas.drawLine(
-            Offset(translateX(joint1.x, rotation, size, absoluteImageSize),
-                translateY(joint1.y, rotation, size, absoluteImageSize)),
-            Offset(translateX(joint2.x, rotation, size, absoluteImageSize),
-                translateY(joint2.y, rotation, size, absoluteImageSize)),
+            Offset(translateX(joint1.x, rotation!, size, absoluteImageSize!),
+                translateY(joint1.y, rotation!, size, absoluteImageSize!)),
+            Offset(translateX(joint2.x, rotation!, size, absoluteImageSize!),
+                translateY(joint2.y, rotation!, size, absoluteImageSize!)),
             paintType);
       }
 
@@ -103,6 +114,7 @@ class PosePainter extends CustomPainter {
           PoseLandmarkType.leftHip, PoseLandmarkType.leftAnkle, leftPaint);
       paintLine(
           PoseLandmarkType.rightHip, PoseLandmarkType.rightAnkle, rightPaint);
+
     }
   }
 

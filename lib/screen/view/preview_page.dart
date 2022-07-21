@@ -1,4 +1,5 @@
-import 'dart:async';
+import'dart:async';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:walking_analysis/model/global_variable.dart';
 
 import 'dart:math' as math;
+import 'package:image/image.dart' as imglib;
 
 import '../../utility/pose_painter_mlkit.dart';
 
@@ -17,17 +19,19 @@ class PreviewPage extends StatefulWidget {
   PreviewPageState createState() => PreviewPageState();
 }
 
-class PreviewPageState extends State<PreviewPage> {
+class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   CameraDescription? _camera;
   CameraController? _controller;
+  Uint8List? decodedBytes;
 
   final PoseDetector _poseDetector = PoseDetector(options: PoseDetectorOptions());
   PosePainter? _posePainter;
+  InputImage? oldInputImage;
 
   final _stopWatch = Stopwatch();
   String _timeMs = '';
 
-  late Future<void> _initializeControllerFuture;
+  late Future<void> isInitializedCamera;
   bool _isStreaming = false;
   bool _isDetecting = false;
 
@@ -35,27 +39,35 @@ class PreviewPageState extends State<PreviewPage> {
   Future _initializeCamera() async {
     List<CameraDescription> cameras = await availableCameras();
     _camera = cameras.first;
-    final CameraController cameraController = CameraController(
-      _camera!,
-      ResolutionPreset.high,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.yuv420,
-    );
-    _controller = cameraController;
-    return _controller!.initialize();
+
+    if (_controller == null) {
+      final CameraController cameraController = CameraController(
+        _camera!,
+        ResolutionPreset.high,
+        enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.yuv420,
+      );
+      _controller = cameraController;
+      return _controller!.initialize();
+    }
+
+    return Future.value(true);
   }
 
   void _start() {
     _controller!.startImageStream(_processCameraImage);
-    setState(() {
-      _isStreaming = true;
-    });
+    _isStreaming = true;
+    setState(() {});
   }
 
   void _stop() {
-    _controller!.stopImageStream();
+    _isStreaming = false;
+    if (_controller!.value.isStreamingImages) {
+      _controller!.stopImageStream();
+    }
     setState(() {
-      _isStreaming = false;
+      decodedBytes = null;
+      _posePainter = PosePainter.reset();
       _timeMs = '';
     });
   }
@@ -63,7 +75,7 @@ class PreviewPageState extends State<PreviewPage> {
   @override
   void initState() {
     super.initState();
-    _initializeControllerFuture = _initializeCamera();
+    isInitializedCamera = _initializeCamera();
   }
 
   @override
@@ -81,7 +93,7 @@ class PreviewPageState extends State<PreviewPage> {
         centerTitle: true,
       ),
       body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
+        future: isInitializedCamera,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             Size tmp = Size(GlobalVar.screenWidth, GlobalVar.screenHeight);
@@ -92,6 +104,8 @@ class PreviewPageState extends State<PreviewPage> {
             double previewW = math.min(tmp.height, tmp.width);
             double screenRatio = screenH / screenW;
             double previewRatio = previewH / previewW;
+            double maxWidth = screenRatio > previewRatio ? screenH / previewH * previewW : screenW;
+            double maxHeight = screenRatio > previewRatio ? screenH : screenW / previewW * previewH;
 
             return Stack(
               fit: StackFit.expand,
@@ -99,28 +113,29 @@ class PreviewPageState extends State<PreviewPage> {
                 Align(
                   alignment: const Alignment(0, 0),
                   child: OverflowBox(
-                      maxHeight: screenRatio > previewRatio ? screenH : screenW / previewW * previewH,
-                      maxWidth: screenRatio > previewRatio ? screenH / previewH * previewW : screenW,
-                      child: CustomPaint(
-                        foregroundPainter: _posePainter,
-                        child: CameraPreview(_controller!),
-                      )
+                    maxWidth: maxWidth,
+                    maxHeight: maxHeight,
+                    child: CustomPaint(
+                      foregroundPainter: _posePainter,
+                      child: CameraPreview(_controller!),
+                    ),
                   ),
                 ),
                 _isStreaming ? Align(
-                    alignment: const Alignment(-0.96, -0.98),
-                    child: Container(
-                      color: Colors.white70,
-                      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                      child: Text(
-                        _timeMs,
-                        style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.black87
-                        ),
+                  alignment: const Alignment(-0.96, -0.98),
+                  child: Container(
+                    color: Colors.white70,
+                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                    child: Text(
+                      _timeMs,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.black87,
                       ),
-                    )
+                    ),
+                  ),
                 ) : Container(),
+
               ],
             );
           } else {
@@ -137,6 +152,7 @@ class PreviewPageState extends State<PreviewPage> {
     );
   }
 
+  // CameraImageからInputImageに変更
   Future _processCameraImage(CameraImage image) async {
     _stopWatch.start();
 
@@ -172,21 +188,35 @@ class PreviewPageState extends State<PreviewPage> {
     );
 
     final inputImage = InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-
+    // cameraImage -> imglib.image -> Uint8List
+    /*
+    setState(() {
+      decodedBytes = Uint8List.fromList(
+          imglib.encodePng(
+              _getImage(image, imageRotation.rawValue)
+          ));
+      print('setState');
+    });
+     */
     processImage(inputImage);
   }
 
+  // 機械学習で結果を取得する
   Future<void> processImage(InputImage inputImage) async {
     if (!_isStreaming) return;
     if (_isDetecting) return;
     _isDetecting = true;
+    oldInputImage = inputImage;
 
     final poses = await _poseDetector.processImage(inputImage);
     if (inputImage.inputImageData?.size != null &&
         inputImage.inputImageData?.imageRotation != null) {
-      _posePainter = PosePainter(poses, inputImage.inputImageData!.size,
-          inputImage.inputImageData!.imageRotation);
+      _posePainter = PosePainter(
+        poses,
+        inputImage.inputImageData!.size,
+        inputImage.inputImageData!.imageRotation,);
     }
+
     _isDetecting = false;
     _stopWatch.stop();
     if (mounted) {
@@ -195,5 +225,38 @@ class PreviewPageState extends State<PreviewPage> {
       });
     }
     _stopWatch.reset();
+    if (!_isStreaming) {
+      _stop();
+    }
+  }
+
+  imglib.Image _getImage(CameraImage cameraImage, int rotation) {
+    imglib.Image image = _convertYUV420(cameraImage);
+    imglib.Image rotated = imglib.copyRotate(image, rotation);
+
+    return rotated;
+  }
+
+  imglib.Image _convertYUV420(CameraImage image) {
+    const int shift = (0xFF << 24);
+
+    final img = imglib.Image(image.width, image.height);
+    Plane plane = image.planes[0];
+
+    // Fill image buffer with plane[0] from YUV420_888
+    for (int x = 0; x < image.width; x++) {
+      for (int planeOffset = 0;
+      planeOffset < image.height * image.width;
+      planeOffset += image.width) {
+        final pixelColor = plane.bytes[planeOffset + x];
+        // color: 0x FF  FF  FF  FF
+        //           A   B   G   R
+        // Calculate pixel color
+        var newVal = shift | (pixelColor << 16) | (pixelColor << 8) | pixelColor;
+        img.data[planeOffset + x] = newVal;
+      }
+    }
+
+    return img;
   }
 }

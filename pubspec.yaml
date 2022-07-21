@@ -41,7 +41,7 @@ dependencies:
   fraction: ^4.0.1
   intl: ^0.17.0
   image: ^3.1.0
-  camera: ^0.9.4+14
+  camera: ^0.10.0
   gallery_saver: ^2.3.2
   csv: ^5.0.1
   flutter_riverpod: ^1.0.3
