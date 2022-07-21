@@ -6,10 +6,11 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 class PosePainter extends CustomPainter {
 
-  PosePainter(this.poses, this.absoluteImageSize, this.rotation,);
+  PosePainter(this.image, this.poses, this.absoluteImageSize, this.rotation,);
 
   PosePainter.reset();
 
+  ui.Image? image;
   List<Pose>? poses;
   Size? absoluteImageSize;
   InputImageRotation? rotation;
@@ -69,6 +70,8 @@ class PosePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..color = Colors.blueAccent;
+
+    canvas.drawImage(image!, const Offset(0, 0), Paint());
 
     for (final pose in poses!) {
       pose.landmarks.forEach((_, landmark) {

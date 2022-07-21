@@ -1,5 +1,6 @@
 import'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -26,7 +27,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
 
   final PoseDetector _poseDetector = PoseDetector(options: PoseDetectorOptions());
   PosePainter? _posePainter;
-  InputImage? oldInputImage;
 
   final _stopWatch = Stopwatch();
   String _timeMs = '';
@@ -135,7 +135,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
                     ),
                   ),
                 ) : Container(),
-
               ],
             );
           } else {
@@ -153,24 +152,24 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   }
 
   // CameraImageからInputImageに変更
-  Future _processCameraImage(CameraImage image) async {
+  Future _processCameraImage(CameraImage cameraImage) async {
     _stopWatch.start();
 
     final WriteBuffer allBytes = WriteBuffer();
-    for (final Plane plane in image.planes) {
+    for (final Plane plane in cameraImage.planes) {
       allBytes.putUint8List(plane.bytes);
     }
     final bytes = allBytes.done().buffer.asUint8List();
 
-    final Size imageSize = Size(image.width.toDouble(), image.height.toDouble());
+    final Size imageSize = Size(cameraImage.width.toDouble(), cameraImage.height.toDouble());
 
     final imageRotation = InputImageRotationValue.fromRawValue(_camera!.sensorOrientation);
     if (imageRotation == null) return;
 
-    final inputImageFormat = InputImageFormatValue.fromRawValue(image.format.raw);
+    final inputImageFormat = InputImageFormatValue.fromRawValue(cameraImage.format.raw);
     if (inputImageFormat == null) return;
 
-    final planeData = image.planes.map(
+    final planeData = cameraImage.planes.map(
           (Plane plane) {
         return InputImagePlaneMetadata(
           bytesPerRow: plane.bytesPerRow,
@@ -188,42 +187,37 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
     );
 
     final inputImage = InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-    // cameraImage -> imglib.image -> Uint8List
-    /*
-    setState(() {
-      decodedBytes = Uint8List.fromList(
-          imglib.encodePng(
-              _getImage(image, imageRotation.rawValue)
-          ));
-      print('setState');
-    });
-     */
-    processImage(inputImage);
+    processImage(inputImage, cameraImage, imageRotation.rawValue);
   }
 
   // 機械学習で結果を取得する
-  Future<void> processImage(InputImage inputImage) async {
+  Future<void> processImage(InputImage inputImage, CameraImage cameraImage, int rotate) async {
     if (!_isStreaming) return;
     if (_isDetecting) return;
     _isDetecting = true;
-    oldInputImage = inputImage;
 
+    // cameraImage -> imglib.image -> Uint8List
+    print('start convert image');
+    ui.Codec codec = await ui.instantiateImageCodec(Uint8List.fromList(imglib.encodePng(_getImage(cameraImage, rotate))));
+    ui.FrameInfo frameInfo = await codec.getNextFrame();
+
+    print('process image');
     final poses = await _poseDetector.processImage(inputImage);
-    if (inputImage.inputImageData?.size != null &&
-        inputImage.inputImageData?.imageRotation != null) {
+    if (inputImage.inputImageData?.size != null && inputImage.inputImageData?.imageRotation != null) {
       _posePainter = PosePainter(
+        frameInfo.image,
         poses,
         inputImage.inputImageData!.size,
         inputImage.inputImageData!.imageRotation,);
     }
 
-    _isDetecting = false;
     _stopWatch.stop();
     if (mounted) {
       setState(() {
         _timeMs = '${_stopWatch.elapsedMilliseconds} [ms]';
       });
     }
+    _isDetecting = false;
     _stopWatch.reset();
     if (!_isStreaming) {
       _stop();
