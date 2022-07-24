@@ -1,6 +1,4 @@
 import'dart:async';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +7,6 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:walking_analysis/model/global_variable.dart';
 
 import 'dart:math' as math;
-import 'package:image/image.dart' as imglib;
 
 import '../../utility/pose_painter_mlkit.dart';
 
@@ -23,12 +20,11 @@ class PreviewPage extends StatefulWidget {
 class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   CameraDescription? _camera;
   CameraController? _controller;
-  Uint8List? decodedBytes;
+  Widget? imageWidget;
 
   final PoseDetector _poseDetector = PoseDetector(options: PoseDetectorOptions());
   PosePainter? _posePainter;
 
-  final _stopWatch = Stopwatch();
   String _timeMs = '';
 
   late Future<void> isInitializedCamera;
@@ -55,9 +51,9 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   }
 
   void _start() {
+    imageWidget = _controller!.buildPreview();
     _controller!.startImageStream(_processCameraImage);
     _isStreaming = true;
-    setState(() {});
   }
 
   void _stop() {
@@ -66,7 +62,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
       _controller!.stopImageStream();
     }
     setState(() {
-      decodedBytes = null;
       _posePainter = PosePainter.reset();
       _timeMs = '';
     });
@@ -87,6 +82,7 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    print('build widget');
     return Scaffold(
       appBar: AppBar(
         title: const Text('リアルタイム検出'),
@@ -110,14 +106,21 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
             return Stack(
               fit: StackFit.expand,
               children: [
-                Align(
+                !_isStreaming ? Align(
+                  alignment: const Alignment(0, 0),
+                  child: OverflowBox(
+                    maxWidth: maxWidth,
+                    maxHeight: maxHeight,
+                    child: CameraPreview(_controller!),
+                  ),
+                ) : Align(
                   alignment: const Alignment(0, 0),
                   child: OverflowBox(
                     maxWidth: maxWidth,
                     maxHeight: maxHeight,
                     child: CustomPaint(
                       foregroundPainter: _posePainter,
-                      child: CameraPreview(_controller!),
+                      child: imageWidget,
                     ),
                   ),
                 ),
@@ -153,7 +156,8 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
 
   // CameraImageからInputImageに変更
   Future _processCameraImage(CameraImage cameraImage) async {
-    _stopWatch.start();
+    if (_isDetecting) return;
+    imageWidget = _controller!.buildPreview();
 
     final WriteBuffer allBytes = WriteBuffer();
     for (final Plane plane in cameraImage.planes) {
@@ -187,70 +191,31 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
     );
 
     final inputImage = InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-    processImage(inputImage, cameraImage, imageRotation.rawValue);
+    processImage(inputImage);
   }
 
   // 機械学習で結果を取得する
-  Future<void> processImage(InputImage inputImage, CameraImage cameraImage, int rotate) async {
+  Future<void> processImage(InputImage inputImage) async {
     if (!_isStreaming) return;
-    if (_isDetecting) return;
     _isDetecting = true;
+    final stopWatch = Stopwatch();
+    stopWatch.start();
 
-    // cameraImage -> imglib.image -> Uint8List
-    print('start convert image');
-    ui.Codec codec = await ui.instantiateImageCodec(Uint8List.fromList(imglib.encodePng(_getImage(cameraImage, rotate))));
-    ui.FrameInfo frameInfo = await codec.getNextFrame();
-
-    print('process image');
     final poses = await _poseDetector.processImage(inputImage);
     if (inputImage.inputImageData?.size != null && inputImage.inputImageData?.imageRotation != null) {
       _posePainter = PosePainter(
-        frameInfo.image,
         poses,
         inputImage.inputImageData!.size,
         inputImage.inputImageData!.imageRotation,);
     }
-
-    _stopWatch.stop();
-    if (mounted) {
-      setState(() {
-        _timeMs = '${_stopWatch.elapsedMilliseconds} [ms]';
-      });
-    }
+    stopWatch.stop();
+    setState(() {
+      _timeMs = '${stopWatch.elapsedMilliseconds} [ms]';
+    });
     _isDetecting = false;
-    _stopWatch.reset();
+    stopWatch.reset();
     if (!_isStreaming) {
       _stop();
     }
-  }
-
-  imglib.Image _getImage(CameraImage cameraImage, int rotation) {
-    imglib.Image image = _convertYUV420(cameraImage);
-    imglib.Image rotated = imglib.copyRotate(image, rotation);
-
-    return rotated;
-  }
-
-  imglib.Image _convertYUV420(CameraImage image) {
-    const int shift = (0xFF << 24);
-
-    final img = imglib.Image(image.width, image.height);
-    Plane plane = image.planes[0];
-
-    // Fill image buffer with plane[0] from YUV420_888
-    for (int x = 0; x < image.width; x++) {
-      for (int planeOffset = 0;
-      planeOffset < image.height * image.width;
-      planeOffset += image.width) {
-        final pixelColor = plane.bytes[planeOffset + x];
-        // color: 0x FF  FF  FF  FF
-        //           A   B   G   R
-        // Calculate pixel color
-        var newVal = shift | (pixelColor << 16) | (pixelColor << 8) | pixelColor;
-        img.data[planeOffset + x] = newVal;
-      }
-    }
-
-    return img;
   }
 }
