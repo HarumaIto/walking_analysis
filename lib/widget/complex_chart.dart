@@ -27,6 +27,7 @@ class ComplexChart extends StatelessWidget {
             ).createChartData()
         ),
       ),
+      const SizedBox(height: 8,),
       SizedBox(
         height: height,
         width: width,
@@ -56,7 +57,7 @@ class ComplexChart extends StatelessWidget {
       );
     } else {
       return Container(
-          margin: const EdgeInsets.only(top: 6, right: 12),
+          margin: const EdgeInsets.only(top: 6, left: 4, right: 16),
           child: Column(
             children: createChildren(120, screenWidth-1.2, dataList),
           )

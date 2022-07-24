@@ -32,6 +32,7 @@ class ChartViewModel extends ConsumerWidget {
         ref.read(dataListProvider.notifier).setConfiguredData(dataList);
       });
     }
+    print(-(sourceList.length.toDouble()));
 
     return Column(
       children: [
@@ -86,9 +87,13 @@ class ChartViewModel extends ConsumerWidget {
                 ),
                 child: Slider(
                   value: positionSlider.toDouble(),
-                  min: sourceList.isNotEmpty || ref.watch(saveVideoStateProvider) ? -(sourceList.length.toDouble()) : 0,
+                  min: sourceList.isNotEmpty || ref.watch(saveVideoStateProvider)
+                      ? -(ref.watch(dataListProvider).dataList.length.toDouble())
+                      : 0,
                   max: 0,
-                  onChanged: (value) {
+                  onChanged: sourceList.isEmpty
+                      ? null
+                      : (value) {
                     ref.read(positionSliderProvider.notifier).state = value.round();
                   },
                 ),
