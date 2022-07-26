@@ -56,6 +56,7 @@ dependencies:
   firebase_core: ^1.17.1
   google_mlkit_pose_detection: ^0.3.0
   firebase_crashlytics: ^2.8.2
+  vector_math: ^2.1.2
 
 flutter_icons:
   android: "launcher_icon"

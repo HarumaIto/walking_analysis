@@ -32,7 +32,6 @@ class ChartViewModel extends ConsumerWidget {
         ref.read(dataListProvider.notifier).setConfiguredData(dataList);
       });
     }
-    print(-(sourceList.length.toDouble()));
 
     return Column(
       children: [

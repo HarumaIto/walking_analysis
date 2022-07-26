@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:vector_math/vector_math_64.dart' as math;
 
 class PosePainter extends CustomPainter {
 
@@ -80,8 +82,7 @@ class PosePainter extends CustomPainter {
             paint);
       });
 
-      void paintLine(
-          PoseLandmarkType type1, PoseLandmarkType type2, Paint paintType) {
+      void paintLine(PoseLandmarkType type1, PoseLandmarkType type2, Paint paintType) {
         final PoseLandmark joint1 = pose.landmarks[type1]!;
         final PoseLandmark joint2 = pose.landmarks[type2]!;
         canvas.drawLine(
@@ -92,7 +93,46 @@ class PosePainter extends CustomPainter {
             paintType);
       }
 
-      //Draw arms
+      void drawAngle(PoseLandmarkType type1, PoseLandmarkType type2, PoseLandmarkType type3) {
+        final PoseLandmark joint1 = pose.landmarks[type1]!;
+        final PoseLandmark joint2 = pose.landmarks[type2]!;
+        final PoseLandmark joint3 = pose.landmarks[type3]!;
+
+        int angle = math.degrees(
+            atan2(joint3.y - joint2.y, joint3.x - joint2.x)
+                -atan2(joint1.y - joint2.y, joint1.x - joint2.x)).round();
+
+        // 負の数になるのを防ぐため
+        angle = angle.abs();
+        // 計算結果に逆数の可能性があるから
+        if (angle > 180) {
+          angle = (360 - angle);
+        }
+
+        // textを用意
+        final textSpan = TextSpan(
+          style: const TextStyle(),
+          children: [
+            TextSpan(text: angle.toString()),
+          ]
+        );
+        // painterを用意
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr
+        )..layout(
+          minWidth: 0,
+          maxWidth: size.width,
+        );
+
+        // textを描画
+        textPainter.paint(canvas, Offset(
+            translateX(joint2.x, rotation!, size, absoluteImageSize!)-12,
+            translateY(joint2.y, rotation!, size, absoluteImageSize!)+4,
+        ));
+      }
+
+      // Draw arms
       paintLine(
           PoseLandmarkType.leftShoulder, PoseLandmarkType.leftElbow, leftPaint);
       paintLine(
@@ -102,18 +142,25 @@ class PosePainter extends CustomPainter {
       paintLine(
           PoseLandmarkType.rightElbow, PoseLandmarkType.rightWrist, rightPaint);
 
-      //Draw Body
+      // Draw Body
       paintLine(
           PoseLandmarkType.leftShoulder, PoseLandmarkType.leftHip, leftPaint);
       paintLine(PoseLandmarkType.rightShoulder, PoseLandmarkType.rightHip,
           rightPaint);
 
-      //Draw legs
+      // Draw legs
       paintLine(
-          PoseLandmarkType.leftHip, PoseLandmarkType.leftAnkle, leftPaint);
+          PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee, leftPaint);
       paintLine(
-          PoseLandmarkType.rightHip, PoseLandmarkType.rightAnkle, rightPaint);
+          PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle, leftPaint);
+      paintLine(
+          PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, rightPaint);
+      paintLine(
+          PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle, rightPaint);
 
+      // Draw knee angle
+      drawAngle(PoseLandmarkType.leftAnkle, PoseLandmarkType.leftKnee, PoseLandmarkType.leftHip);
+      drawAngle(PoseLandmarkType.rightAnkle, PoseLandmarkType.rightKnee, PoseLandmarkType.rightHip);
     }
   }
 
