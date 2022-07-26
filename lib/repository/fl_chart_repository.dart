@@ -28,14 +28,14 @@ class FlChartRepository {
       gridData: _flGridData,
       maxX: 100,
       minX: 0,
-      maxY: 180,
-      minY: 80,
+      maxY: -80,
+      minY: -200,
     );
   }
 
   // さわった時に表示されるデータを設定
   LineTouchData get _lineTouchData => LineTouchData(
-      handleBuiltInTouches: true,
+      handleBuiltInTouches: false,
       touchTooltipData: LineTouchTooltipData(
         tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
       )
@@ -85,14 +85,17 @@ class FlChartRepository {
     const style = TextStyle(fontSize: 12,);
     String text;
     switch (value.toInt()) {
-      case 80:
+      case -80:
         text = '80';
         break;
-      case 130:
-        text = '130';
+      case -120:
+        text = '120';
         break;
-      case 180:
+      case -180:
         text = '180';
+        break;
+      case -200:
+        text = '200';
         break;
       default:
         return Container();
@@ -157,7 +160,7 @@ class FlChartRepository {
     drawVerticalLine: false,
     horizontalInterval: 1,
     checkToShowHorizontalLine: (double value) {
-      return value == 100 || value == 120 || value == 140 || value == 160;
+      return value == -100 || value == -120 || value == -140 || value == -160 || value == -180;
     }
   );
 
@@ -169,7 +172,7 @@ class FlChartRepository {
     int dataLength = list.length;
     for (int i=0; i<dataLength; i++) {
       double count = normalization(i, dataLength);
-      result.add(FlSpot(count, list[i][columnNum].toDouble()));
+      result.add(FlSpot(count, -list[i][columnNum].toDouble()));
     }
 
     return result;
