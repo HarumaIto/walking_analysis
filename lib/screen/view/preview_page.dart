@@ -1,14 +1,16 @@
 import'dart:async';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:walking_analysis/model/global_variable.dart';
+import 'package:walking_analysis/model/tflite_models.dart';
+import 'package:walking_analysis/repository/tflite_flutter_repository.dart';
 
 import 'dart:math' as math;
-
-import '../../utility/pose_painter_mlkit.dart';
+import 'package:image/image.dart' as imglib;
+import 'package:walking_analysis/utility/image_utils.dart';
 
 class PreviewPage extends StatefulWidget {
   const PreviewPage({Key? key}) : super(key: key);
@@ -22,8 +24,7 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   CameraController? _controller;
   Widget? imageWidget;
 
-  final PoseDetector _poseDetector = PoseDetector(options: PoseDetectorOptions());
-  PosePainter? _posePainter;
+  TFLiteFlutterRepository tflite = TFLiteFlutterRepository();
 
   String _timeMs = '';
 
@@ -62,7 +63,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
       _controller!.stopImageStream();
     }
     setState(() {
-      _posePainter = PosePainter.reset();
       _timeMs = '';
     });
   }
@@ -119,7 +119,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
                     maxWidth: maxWidth,
                     maxHeight: maxHeight,
                     child: CustomPaint(
-                      foregroundPainter: _posePainter,
                       child: imageWidget,
                     ),
                   ),
@@ -156,66 +155,21 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
 
   // CameraImageからInputImageに変更
   Future _processCameraImage(CameraImage cameraImage) async {
-    if (_isDetecting) return;
-    imageWidget = _controller!.buildPreview();
-
-    final WriteBuffer allBytes = WriteBuffer();
-    for (final Plane plane in cameraImage.planes) {
-      allBytes.putUint8List(plane.bytes);
+    if (_isDetecting) {
+      return;
     }
-    final bytes = allBytes.done().buffer.asUint8List();
-
-    final Size imageSize = Size(cameraImage.width.toDouble(), cameraImage.height.toDouble());
-
-    final imageRotation = InputImageRotationValue.fromRawValue(_camera!.sensorOrientation);
-    if (imageRotation == null) return;
-
-    final inputImageFormat = InputImageFormatValue.fromRawValue(cameraImage.format.raw);
-    if (inputImageFormat == null) return;
-
-    final planeData = cameraImage.planes.map(
-          (Plane plane) {
-        return InputImagePlaneMetadata(
-          bytesPerRow: plane.bytesPerRow,
-          height: plane.height,
-          width: plane.width,
-        );
-      },
-    ).toList();
-
-    final inputImageData = InputImageData(
-      size: imageSize,
-      imageRotation: imageRotation,
-      inputImageFormat: inputImageFormat,
-      planeData: planeData,
-    );
-
-    final inputImage = InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-    processImage(inputImage);
-  }
-
-  // 機械学習で結果を取得する
-  Future<void> processImage(InputImage inputImage) async {
-    if (!_isStreaming) return;
     _isDetecting = true;
-    final stopWatch = Stopwatch();
-    stopWatch.start();
 
-    final poses = await _poseDetector.processImage(inputImage);
-    if (inputImage.inputImageData?.size != null && inputImage.inputImageData?.imageRotation != null) {
-      _posePainter = PosePainter(
-        poses,
-        inputImage.inputImageData!.size,
-        inputImage.inputImageData!.imageRotation,);
+    if (tflite.interpreter == null) {
+      tflite = TFLiteFlutterRepository(
+          interpreter: Interpreter.fromAddress(tflite.interpreter!.address));
     }
-    stopWatch.stop();
-    setState(() {
-      _timeMs = '${stopWatch.elapsedMilliseconds} [ms]';
-    });
+    imglib.Image image = ImageUtils.convertCameraImage(cameraImage)!;
+    if (Platform.isAndroid) {
+      image = imglib.copyRotate(image, 90);
+    }
+    Person person = tflite.predict(image);
+    print(person.toString());
     _isDetecting = false;
-    stopWatch.reset();
-    if (!_isStreaming) {
-      _stop();
-    }
   }
 }

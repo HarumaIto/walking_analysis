@@ -33,11 +33,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  permission_handler: ^8.3.0
+  permission_handler: ^10.0.0
   image_picker: ^0.8.4+8
   video_player: ^2.2.18
   path_provider: ^2.0.9
-  flutter_ffmpeg: ^0.4.2
   fraction: ^4.0.1
   intl: ^0.17.0
   image: ^3.1.0
@@ -54,9 +53,12 @@ dependencies:
   convex_bottom_bar: ^3.0.0
   fluttertoast: ^8.0.9
   firebase_core: ^1.17.1
-  google_mlkit_pose_detection: ^0.3.0
   firebase_crashlytics: ^2.8.2
   vector_math: ^2.1.2
+  tflite_flutter: ^0.9.0
+  tflite_flutter_helper: ^0.2.1
+  analyzer_plugin: ^0.11.1
+  ffmpeg_kit_flutter: 4.5.1-LTS
 
 flutter_icons:
   android: "launcher_icon"
@@ -96,9 +98,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/app_icon.png
     - assets/comparison_data.csv
     - assets/movenet_thunder.tflite
+    - assets/posenet.tflite
+    - assets/app_icon.png
     - assets/e_walking_scene.png
     - assets/graph.png
     - assets/two_step.png

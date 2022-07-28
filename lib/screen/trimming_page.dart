@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:walking_analysis/utility/file_processor.dart';
@@ -26,7 +26,6 @@ class TrimmingPage extends StatefulWidget {
 class _TrimmingPageState extends State<TrimmingPage> {
   double width = GlobalVar.screenWidth;
   double height = GlobalVar.screenHeight;
-  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   TextEditingController timeBoxControllerStart = TextEditingController();
   TextEditingController timeBoxControllerEnd = TextEditingController();
   late VideoPlayerController _videoPlayerController;
@@ -109,7 +108,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
             gradesRange.start.truncate()
     );
 
-    _flutterFFmpeg
+    FFmpegKit
         .execute('-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
         .then((value) {
       setState(() {

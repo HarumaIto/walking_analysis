@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' as intl;
 
@@ -100,8 +100,7 @@ class MlRepository {
     ref.read(runTimeProvider.notifier).state = '平均 ${runTimeSum~/frameNum}';
 
     // 動画出力
-    final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
-    await flutterFFmpeg.execute("-y -i $inputPath -vcodec mpeg4 -q:v 1 -vframes $frameNum $outputVideoPath");
+    await FFmpegKit.execute("-y -i $inputPath -vcodec mpeg4 -q:v 1 -vframes $frameNum $outputVideoPath");
     deleteCache();
 
     // csvファイルを作成
