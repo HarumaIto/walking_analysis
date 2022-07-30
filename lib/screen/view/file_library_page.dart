@@ -62,8 +62,8 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   @override
   void initState() {
     super.initState();
-    getExternalStorageDirectory().then((directory) {
-      dir = directory!;
+    getApplicationDocumentsDirectory().then((directory) {
+      dir = directory;
       getFileList(ref, dir);
     });
     _createVideoController(VideoFilePath.mlOutputPath, 1);

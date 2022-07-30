@@ -32,7 +32,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
   var gradesRange = const RangeValues(0, 100);
   bool progress = false;
   Duration position = const Duration(hours: 0, minutes: 0, seconds: 0);
-  final String outPath = VideoFilePath.mlInputPath;
+  final outPath = VideoFilePath.mlInputPath;
   bool stopTimer = false;
 
   InputDecoration timeBoxDecoration = InputDecoration(
@@ -108,18 +108,19 @@ class _TrimmingPageState extends State<TrimmingPage> {
             gradesRange.start.truncate()
     );
 
-    FFmpegKit
-        .execute('-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
-        .then((value) {
-      setState(() {
-        progress = false;
-      });
-      if (widget.source == ImageSource.camera) saveVideoTaken(outPath);
-      createThumbnail(outPath);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
-      );
-    }).catchError((error) {});
+    FFmpegKit.executeAsync(
+        '-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath');
+    if (widget.source == ImageSource.camera) {
+      saveVideoTaken(outPath);
+    }
+    createThumbnail(outPath);
+    setState(() {
+      progress = false;
+    });
+    // ignore: use_build_context_synchronously
+    Navigator.push(
+        context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
+    );
   }
 
   @override

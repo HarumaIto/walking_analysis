@@ -94,18 +94,10 @@ class PrepareViewModel extends ConsumerWidget {
     });
   }
 
-  // 保存されたサムネイルがあれば返す
-  Uint8List? getImage(InputThumbModel thumbModel) {
-    if (thumbModel.isState()) {
-      return thumbModel.bytes;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prepareState = ref.watch(prepareStateProvider);
-    Uint8List? inputBytes = getImage(ref.watch(inputThumbProvider));
+    Uint8List? inputBytes = ref.watch(inputThumbProvider).bytes;
     double imageHeight = GlobalVar.screenHeight / 7;
 
     return Row(

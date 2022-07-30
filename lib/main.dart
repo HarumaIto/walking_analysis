@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -39,9 +40,14 @@ void main() async {
   userSettingPreference.initUserSetting();
 
   // pathの設定
-  VideoFilePath.trimmingInputPath = '${(await getExternalStorageDirectory())!.path}/select.mp4';
-  VideoFilePath.mlInputPath = '${(await getExternalStorageDirectory())!.path}/input.mp4';
-  VideoFilePath.mlOutputPath = '${(await getExternalStorageDirectory())!.path}/output.mp4';
+  Directory directory = await getApplicationDocumentsDirectory();
+  directory.createSync(recursive: true);
+  VideoFilePath.trimmingInputPath =
+      createFile('${directory.path}/select.mp4');
+  VideoFilePath.mlInputPath =
+      createFile('${directory.path}/input.mp4');
+  VideoFilePath.mlOutputPath =
+      createFile('${directory.path}/output.mp4');
   // 比較用データの設定
   GlobalVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
 

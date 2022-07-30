@@ -104,7 +104,7 @@ class MlRepository {
     deleteCache();
 
     // csvファイルを作成
-    String dirPath = await getExternalStoragePath();
+    String dirPath = await getStorageDirectoryPath();
     String outputPath = "$dirPath/$formattedDate.csv";
     List<String> headerList = ['left knee', 'right knee'];
     createCSVFile(outputPath, headerList, angleLists);
