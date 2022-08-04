@@ -10,7 +10,7 @@ import kotlin.math.roundToInt
 
 class MainActivity: FlutterActivity() {
     companion object {
-        private const val CHANNEL = "com.hanjukukobo.walking_analysis/ml"
+        private const val CHANNEL = "walking_analysis/ml"
         private const val METHOD_CREATE = "create"
         private const val METHOD_PROCESS = "process"
         private const val METHOD_CLOSE = "close"

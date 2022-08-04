@@ -31,8 +31,11 @@ String createFile(String path) {
 
 /// 一時ディレクトリへのパス
 Future<String> getTemporaryDirectoryPath() async {
-  Directory tmpDocDir = await getTemporaryDirectory();
-  return tmpDocDir.path;
+  Directory tmpDir = await getTemporaryDirectory();
+  var tempDirPath = tmpDir.path;
+  final localPath = '$tempDirPath/local';
+  await Directory(localPath).create(recursive: true);
+  return '${tmpDir.path}/local';
 }
 
 /// アプリケーション専用のディレクトリへのパス
@@ -67,8 +70,9 @@ void saveVideoTaken(String path) {
 void deleteCache() async {
   // ディレクトリ削除
   Directory directory = await getTemporaryDirectory();
-  int length = directory.listSync(followLinks: false).length;
-  Directory(directory.path).delete(recursive: true).then((value) =>
+  Directory localDir = Directory('${directory.path}/local');
+  int length = localDir.listSync(followLinks: false).length;
+  Directory(localDir.path).delete(recursive: true).then((value) =>
       showToast('$length個の一時的ファイルを削除しました')
   );
 }

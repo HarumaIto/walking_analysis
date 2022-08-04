@@ -9,7 +9,6 @@ import '../model/images_info.dart';
 class VideoToImage {
   String duration = '';
   String realFrameRate = '';
-  List pathNameList = [];
   final String _filePath ;
 
   VideoToImage(this._filePath);
@@ -42,7 +41,7 @@ class VideoToImage {
     }
   }
 
-  Future convertImage(path, frameNumber) async {
+  Future<List?> convertImage(path, frameNumber) async {
     try {
       DateTime now = DateTime.now();
       String formattedDate = DateFormat('yyyy-MM-dd–kk-mm-ss').format(now);
@@ -56,7 +55,7 @@ class VideoToImage {
           .execute("-i $_filePath -vcodec png -q:v 1 -vframes $frameNumber $outputPath")
           .then((rc) => print("FFmpeg process exited with rc $rc"));
 
-      pathNameList = [];
+      List pathNameList = [];
 
       //画像の保存先をリストに追加
       for (int i = 1; i < frameNumber + 1; i++) {
@@ -67,6 +66,7 @@ class VideoToImage {
       return pathNameList;
     } catch (e) {
       print(e);
+      return null;
     }
   }
 }

@@ -17,7 +17,7 @@ import '../utility/video_to_image.dart';
 
 class MlRepository {
   final WidgetRef ref = GlobalVar.globalRef!;
-  final MethodChannel channel = const MethodChannel('com.hanjukukobo.walking_analysis/ml');
+  final MethodChannel channel = const MethodChannel('walking_analysis/ml');
 
   double runTimeSum = 0;
 
@@ -50,6 +50,7 @@ class MlRepository {
     List<List<dynamic>> angleLists = [];
 
     final int maxCount = pathNameList.length;
+    print(maxCount);
     int nowCount = 0;
     // 分割した画像の枚数分ループ
     // try-catchはなぜかループが一回多く回ってしまうことに対処するため
@@ -70,7 +71,7 @@ class MlRepository {
         final Uint8List imageByte = map['image'];
         ui.Image image = await decodeImageFromList(imageByte);
 
-        _overwriteImage(image, imagePath);
+        await _overwriteImage(image, imagePath);
 
         nowCount++;
         double percent = nowCount / maxCount;
@@ -117,12 +118,14 @@ class MlRepository {
   }
 
   // 元画像と機械学習の結果を合成して書き換える
-  void _overwriteImage(ui.Image image, String path) async {
+  Future<bool> _overwriteImage(ui.Image image, String path) async {
     // 画像を生成
     final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
 
     final file = File(path);
     final buffer = pngBytes?.buffer;
-    await file.writeAsBytes(buffer!.asUint8List(pngBytes!.offsetInBytes, pngBytes.lengthInBytes));
+    file.writeAsBytesSync(buffer!.asUint8List(pngBytes!.offsetInBytes, pngBytes.lengthInBytes));
+
+    return true;
   }
 }

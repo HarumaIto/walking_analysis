@@ -99,7 +99,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
     });
   }
 
-  void onTrim() async {
+  void onTrim() {
     setState(() {
       progress = true;
     });
@@ -108,19 +108,26 @@ class _TrimmingPageState extends State<TrimmingPage> {
             gradesRange.start.truncate()
     );
 
-    FFmpegKit.executeAsync(
-        '-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath');
-    if (widget.source == ImageSource.camera) {
-      saveVideoTaken(outPath);
-    }
-    createThumbnail(outPath);
-    setState(() {
-      progress = false;
-    });
-    // ignore: use_build_context_synchronously
-    Navigator.push(
-        context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
-    );
+    FFmpegKit.execute(
+        '-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
+      .then((value) {
+        if (widget.source == ImageSource.camera) {
+          saveVideoTaken(outPath);
+        }
+        // errorを回避するため
+        if (Platform.isIOS) {
+          createThumbnail(widget.inputFile.path, true, timeBoxControllerStart.text);
+        } else {
+          createThumbnail(outPath);
+        }
+        setState(() {
+          progress = false;
+        });
+        // ignore: use_build_context_synchronously
+        Navigator.push(
+          context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
+        );
+      });
   }
 
   @override

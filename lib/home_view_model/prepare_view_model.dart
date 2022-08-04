@@ -67,7 +67,7 @@ class PrepareViewModel extends ConsumerWidget {
                       onPressed: () {
                         if (source == ImageSource.camera) saveVideoTaken(xFile.path);
                         // ログ用のサムネイルを作成
-                        createThumbnail(xFile.path);
+                        createThumbnail(xFile.path, false);
                         Navigator.pop(context); // ダイアログを閉じる
                         ref.read(processStateProvider.notifier).state = true;
                         Navigator.pop(context); // 説明ページを閉じる
@@ -127,8 +127,7 @@ class PrepareViewModel extends ConsumerWidget {
                     if (granted) {
                       Navigator.push(context, MaterialPageRoute(
                         builder: (_) =>
-                          ExplainCondition(ImageSource.camera, ref)
-                      ));
+                          ExplainCondition(ImageSource.camera, ref)));
                     }
                   }
                 );
