@@ -67,7 +67,7 @@ class PrepareViewModel extends ConsumerWidget {
                       onPressed: () {
                         if (source == ImageSource.camera) saveVideoTaken(xFile.path);
                         // ログ用のサムネイルを作成
-                        createThumbnail(xFile.path);
+                        createThumbnail(xFile.path, false);
                         Navigator.pop(context); // ダイアログを閉じる
                         ref.read(processStateProvider.notifier).state = true;
                         Navigator.pop(context); // 説明ページを閉じる
@@ -94,18 +94,10 @@ class PrepareViewModel extends ConsumerWidget {
     });
   }
 
-  // 保存されたサムネイルがあれば返す
-  Uint8List? getImage(InputThumbModel thumbModel) {
-    if (thumbModel.isState()) {
-      return thumbModel.bytes;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prepareState = ref.watch(prepareStateProvider);
-    Uint8List? inputBytes = getImage(ref.watch(inputThumbProvider));
+    Uint8List? inputBytes = ref.watch(inputThumbProvider).bytes;
     double imageHeight = GlobalVar.screenHeight / 7;
 
     return Row(
@@ -135,8 +127,7 @@ class PrepareViewModel extends ConsumerWidget {
                     if (granted) {
                       Navigator.push(context, MaterialPageRoute(
                         builder: (_) =>
-                          ExplainCondition(ImageSource.camera, ref)
-                      ));
+                          ExplainCondition(ImageSource.camera, ref)));
                     }
                   }
                 );

@@ -69,7 +69,7 @@ class ResultViewModel extends ConsumerWidget {
     DateTime now = DateTime.now();
     String formattedDate = intl.DateFormat('yyyy-MM-dd–hh-mm-ss').format(now);
     String newFileName = formattedDate;
-    Directory? dir = await getExternalStorageDirectory();
+    Directory dir = await getApplicationDocumentsDirectory();
     showDialog(context: context, barrierDismissible: false, builder: (_) {
       return AlertDialog(
         title: const Text('ファイル名を入力'),
@@ -91,7 +91,7 @@ class ResultViewModel extends ConsumerWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              if (checkInputFileName(newFileName, VideoFilePath.mlOutputPath, dir!)) {
+              if (checkInputFileName(newFileName, VideoFilePath.mlOutputPath, dir)) {
                 String dirPath = dir.path;
                 String filePath = '$dirPath/$newFileName.mp4';
                 File(VideoFilePath.mlOutputPath).copy(filePath).then((value) {

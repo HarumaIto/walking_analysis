@@ -98,6 +98,7 @@ flutter:
   assets:
     - assets/app_icon.png
     - assets/comparison_data.csv
+    - assets/movenet_thunder.tflite
     - assets/e_walking_scene.png
     - assets/graph.png
     - assets/two_step.png

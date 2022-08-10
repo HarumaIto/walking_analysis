@@ -19,7 +19,7 @@
     <uses-sdk tools:overrideLibrary="com.arthenica.ffmpegkit.flutter, com.arthenica.ffmpegkit" />
 
    <application
-        android:label="walking_analysis"
+        android:label="歩行分析"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true">

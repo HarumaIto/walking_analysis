@@ -2,11 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:analyzer_plugin/utilities/pair.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:walking_analysis/utility/visualize_ml.dart';
 
 import '../model/global_variable.dart';
 import '../model/images_info.dart';
@@ -17,7 +20,7 @@ import '../utility/video_to_image.dart';
 
 class MlRepository {
   final WidgetRef ref = GlobalVar.globalRef!;
-  final MethodChannel channel = const MethodChannel('com.hanjukukobo.walking_analysis/ml');
+  final MethodChannel channel = const MethodChannel('walking_analysis/ml');
 
   double runTimeSum = 0;
 
@@ -50,6 +53,7 @@ class MlRepository {
     List<List<dynamic>> angleLists = [];
 
     final int maxCount = pathNameList.length;
+    print(maxCount);
     int nowCount = 0;
     // 分割した画像の枚数分ループ
     // try-catchはなぜかループが一回多く回ってしまうことに対処するため
@@ -66,11 +70,10 @@ class MlRepository {
         if (angleList.isEmpty) angleList..add(0)..add(0);
         angleLists.add(angleList);
 
-        // ネイティブから画像を取得
-        final Uint8List imageByte = map['image'];
-        ui.Image image = await decodeImageFromList(imageByte);
-
-        _overwriteImage(image, imagePath);
+        // ネイティブからkeyPointを取得
+        final List keyPoints = map['keyPoint'];
+        ui.Image image = await decodeImageFromList(imageBytes);
+        await createOutputImage(keyPoints, image, imagePath);
 
         nowCount++;
         double percent = nowCount / maxCount;
@@ -86,7 +89,7 @@ class MlRepository {
     } catch (e) {
       print(e);
     }
-
+    // 終了処理
     channel.invokeMethod('close');
     ref.read(progressValProvider.notifier).setIsDeterminate(false);
     ref.read(mlStateProvider.notifier).state = '出力処理中';
@@ -100,12 +103,11 @@ class MlRepository {
     ref.read(runTimeProvider.notifier).state = '平均 ${runTimeSum~/frameNum}';
 
     // 動画出力
-    final FlutterFFmpeg flutterFFmpeg = FlutterFFmpeg();
-    await flutterFFmpeg.execute("-y -i $inputPath -vcodec mpeg4 -q:v 1 -vframes $frameNum $outputVideoPath");
+    await FFmpegKit.execute("-y -i $inputPath -vcodec mpeg4 -q:v 1 -vframes $frameNum $outputVideoPath");
     deleteCache();
 
     // csvファイルを作成
-    String dirPath = await getExternalStoragePath();
+    String dirPath = await getStorageDirectoryPath();
     String outputPath = "$dirPath/$formattedDate.csv";
     List<String> headerList = ['left knee', 'right knee'];
     createCSVFile(outputPath, headerList, angleLists);
@@ -115,15 +117,5 @@ class MlRepository {
     ref.read(restartStateProvider.notifier).state = true;
     ref.read(saveVideoStateProvider.notifier).state = true;
     ref.read(mlStateProvider.notifier).state = '';
-  }
-
-  // 元画像と機械学習の結果を合成して書き換える
-  void _overwriteImage(ui.Image image, String path) async {
-    // 画像を生成
-    final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    final file = File(path);
-    final buffer = pngBytes?.buffer;
-    await file.writeAsBytes(buffer!.asUint8List(pngBytes!.offsetInBytes, pngBytes.lengthInBytes));
   }
 }

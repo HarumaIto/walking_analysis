@@ -16,16 +16,32 @@ import '../model/preference_keys.dart';
 import '../repository/sharedpref_repository.dart';
 import '../state/file_library_provider.dart';
 
+/// ファイルを作成
+String createFile(String path) {
+  final file = File(path);
+  if (file.existsSync()) {
+    // すでにPathが存在する
+    return path;
+  } else {
+    // trueにすると親Pathがなくても作成される
+    file.createSync(recursive: true);
+    return path;
+  }
+}
+
 /// 一時ディレクトリへのパス
 Future<String> getTemporaryDirectoryPath() async {
-  Directory tmpDocDir = await getTemporaryDirectory();
-  return tmpDocDir.path;
+  Directory tmpDir = await getTemporaryDirectory();
+  var tempDirPath = tmpDir.path;
+  final localPath = '$tempDirPath/local';
+  await Directory(localPath).create(recursive: true);
+  return '${tmpDir.path}/local';
 }
 
 /// アプリケーション専用のディレクトリへのパス
- Future<String> getExternalStoragePath() async {
-  Directory? appDocDir = await getExternalStorageDirectory();
-  return appDocDir!.path;
+ Future<String> getStorageDirectoryPath() async {
+  Directory appDocDir = await getApplicationDocumentsDirectory();
+  return appDocDir.path;
 }
 
 /// 撮影した動画を写真またはギャラリーへ保存
@@ -54,8 +70,9 @@ void saveVideoTaken(String path) {
 void deleteCache() async {
   // ディレクトリ削除
   Directory directory = await getTemporaryDirectory();
-  int length = directory.listSync(followLinks: false).length;
-  Directory(directory.path).delete(recursive: true).then((value) =>
+  Directory localDir = Directory('${directory.path}/local');
+  int length = localDir.listSync(followLinks: false).length;
+  Directory(localDir.path).delete(recursive: true).then((value) =>
       showToast('$length個の一時的ファイルを削除しました')
   );
 }
@@ -87,8 +104,8 @@ String getDirectoryForPath(String path) {
 
 /// pathからfile名を取得
 String getFileNameForPath(String path) {
-  final splitList = path.split('/');
-  return splitList[splitList.length-1];
+  final fullSplit = path.split('/');
+  return fullSplit[fullSplit.length-1];
 }
 
 /// 拡張子を取得
@@ -190,7 +207,6 @@ Future<List> getDataForAssetsCSV(String filePath) async {
 
 /// 独自の内部ファイルのcsvファイルからデータ取得
 List getDataForFileCSV(String filePath) {
-  print(filePath);
   List<List<int>> data = [];
 
   File file = File(filePath);
@@ -218,7 +234,6 @@ List getDataForFileCSV(String filePath) {
         fontSize: 16.0
     );
   }
-
 
   return data;
 }

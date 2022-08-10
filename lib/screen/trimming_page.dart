@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:walking_analysis/utility/file_processor.dart';
@@ -26,14 +26,13 @@ class TrimmingPage extends StatefulWidget {
 class _TrimmingPageState extends State<TrimmingPage> {
   double width = GlobalVar.screenWidth;
   double height = GlobalVar.screenHeight;
-  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   TextEditingController timeBoxControllerStart = TextEditingController();
   TextEditingController timeBoxControllerEnd = TextEditingController();
   late VideoPlayerController _videoPlayerController;
   var gradesRange = const RangeValues(0, 100);
   bool progress = false;
   Duration position = const Duration(hours: 0, minutes: 0, seconds: 0);
-  final String outPath = VideoFilePath.mlInputPath;
+  final outPath = VideoFilePath.mlInputPath;
   bool stopTimer = false;
 
   InputDecoration timeBoxDecoration = InputDecoration(
@@ -100,7 +99,7 @@ class _TrimmingPageState extends State<TrimmingPage> {
     });
   }
 
-  void onTrim() async {
+  void onTrim() {
     setState(() {
       progress = true;
     });
@@ -109,18 +108,26 @@ class _TrimmingPageState extends State<TrimmingPage> {
             gradesRange.start.truncate()
     );
 
-    _flutterFFmpeg
-        .execute('-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
-        .then((value) {
-      setState(() {
-        progress = false;
-      });
-      if (widget.source == ImageSource.camera) saveVideoTaken(outPath);
-      createThumbnail(outPath);
-      Navigator.push(
+    FFmpegKit.execute(
+        '-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
+      .then((value) {
+        if (widget.source == ImageSource.camera) {
+          saveVideoTaken(outPath);
+        }
+        // errorを回避するため
+        if (Platform.isIOS) {
+          createThumbnail(widget.inputFile.path, true, timeBoxControllerStart.text);
+        } else {
+          createThumbnail(outPath);
+        }
+        setState(() {
+          progress = false;
+        });
+        // ignore: use_build_context_synchronously
+        Navigator.push(
           context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
-      );
-    }).catchError((error) {});
+        );
+      });
   }
 
   @override
