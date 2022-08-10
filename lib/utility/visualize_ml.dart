@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:analyzer_plugin/utilities/pair.dart';
@@ -27,7 +27,7 @@ final bodyJoints = [
 ];
 
 // 元画像と機械学習の結果を合成して書き換える
-Future<bool> createOutputImage(List keyPoints, ui.Image image, String path) async {
+Future<Uint8List> createOutputImage(List keyPoints, ui.Image image) async {
   // canvasの用意
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
@@ -61,10 +61,7 @@ Future<bool> createOutputImage(List keyPoints, ui.Image image, String path) asyn
   // 画像を生成
   final pngBytes = await resultImage.toByteData(format: ui.ImageByteFormat.png);
 
-  // fileへ出力
-  final file = File(path);
+  // Uint8List形式でreturn
   final buffer = pngBytes?.buffer;
-  file.writeAsBytesSync(buffer!.asUint8List(pngBytes!.offsetInBytes, pngBytes.lengthInBytes));
-
-  return true;
+  return buffer!.asUint8List(pngBytes!.offsetInBytes, pngBytes.lengthInBytes);
 }

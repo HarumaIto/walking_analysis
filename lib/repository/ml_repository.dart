@@ -2,12 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:analyzer_plugin/utilities/pair.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image/image.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:walking_analysis/utility/visualize_ml.dart';
 
@@ -38,7 +36,7 @@ class MlRepository {
 
     VideoToImage videoToImage = VideoToImage(VideoFilePath.mlInputPath);
     String localDirectoryPath = await getTemporaryDirectoryPath();
-    final frameNum = await videoToImage.videoConfig();
+    final int frameNum = await videoToImage.videoConfig();
     ImagesInfo.FRAME_NUM = frameNum;
     return await videoToImage.convertImage(localDirectoryPath, frameNum);
   }
@@ -73,8 +71,11 @@ class MlRepository {
         // ネイティブからkeyPointを取得
         final List keyPoints = map['keyPoint'];
         ui.Image image = await decodeImageFromList(imageBytes);
-        await createOutputImage(keyPoints, image, imagePath);
+        final outputImage = await createOutputImage(keyPoints, image);
+        final file = File(imagePath);
+        file.writeAsBytesSync(outputImage);
 
+        // 後処理と次に向けた処理
         nowCount++;
         double percent = nowCount / maxCount;
         if (!ref.watch(progressValProvider).isDeterminate) {
@@ -107,7 +108,7 @@ class MlRepository {
     deleteCache();
 
     // csvファイルを作成
-    String dirPath = await getStorageDirectoryPath();
+    String dirPath = VideoFilePath.myAppDirectoryPath;
     String outputPath = "$dirPath/$formattedDate.csv";
     List<String> headerList = ['left knee', 'right knee'];
     createCSVFile(outputPath, headerList, angleLists);

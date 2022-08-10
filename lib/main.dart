@@ -42,12 +42,13 @@ void main() async {
   // pathの設定
   Directory directory = await getApplicationDocumentsDirectory();
   directory.createSync(recursive: true);
+  VideoFilePath.myAppDirectoryPath = '${directory.path}/local';
   VideoFilePath.trimmingInputPath =
-      createFile('${directory.path}/select.mp4');
+      createFile('${VideoFilePath.myAppDirectoryPath}/select.mp4');
   VideoFilePath.mlInputPath =
-      createFile('${directory.path}/input.mp4');
+      createFile('${VideoFilePath.myAppDirectoryPath}/input.mp4');
   VideoFilePath.mlOutputPath =
-      createFile('${directory.path}/output.mp4');
+      createFile('${VideoFilePath.myAppDirectoryPath}/output.mp4');
   // 比較用データの設定
   GlobalVar.comparisonData = await getDataForAssetsCSV('assets/comparison_data.csv');
 

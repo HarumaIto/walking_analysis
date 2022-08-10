@@ -49,6 +49,7 @@ class MainActivity: FlutterActivity() {
 
         val persons = mutableListOf<Person>()
         val angleList = mutableListOf<Int>()
+        val keyPoints = mutableListOf<MutableList<Float>>()
 
         if (bitmap != null) {
             moveNet!!.estimatePoses(bitmap).let {
@@ -65,6 +66,10 @@ class MainActivity: FlutterActivity() {
                 val leftKneeAngle = getArticularAngle(leftHip, leftKnee, leftAnkle)
                 val rightKneeAngle = getArticularAngle(rightHip, rightKnee, rightAnkle)
 
+                person.keyPoints.forEach { keyPoint ->
+                    keyPoints.add(mutableListOf(keyPoint.coordinate.x, keyPoint.coordinate.y))
+                }
+
                 angleList.add(leftKneeAngle)
                 angleList.add(rightKneeAngle)
             }
@@ -77,7 +82,7 @@ class MainActivity: FlutterActivity() {
 
             return hashMapOf(
                 "angleList" to angleList,
-                "image" to outputBytes
+                "keyPoint" to keyPoints
             )
         } else {
             return hashMapOf()

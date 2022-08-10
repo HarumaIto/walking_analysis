@@ -2,6 +2,7 @@ package com.hanjukukobo.walking_analysis
 
 import android.content.Context
 import android.graphics.*
+import android.util.Log
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.GpuDelegate

@@ -16,6 +16,8 @@ void createThumbnail(String path, [
   if (isTrimmed) {
     String dirPath = getDirectoryForPath(path);
     String imagePath = '$dirPath/thumb.jpeg';
+    final file = File(imagePath);
+    if (!file.existsSync()) file.createSync(recursive: true);
     FFmpegKit
         .executeAsync('-y -i $path -ss $start -vframes 1 -q:v 1 -f image2 $imagePath')
         .then((value) {

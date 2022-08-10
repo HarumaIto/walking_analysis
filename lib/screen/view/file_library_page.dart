@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:walking_analysis/model/video_file_path.dart';
 import 'package:walking_analysis/widget/complex_chart.dart';
@@ -62,10 +61,8 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
   @override
   void initState() {
     super.initState();
-    getApplicationDocumentsDirectory().then((directory) {
-      dir = directory;
-      getFileList(ref, dir);
-    });
+    dir = Directory(VideoFilePath.myAppDirectoryPath);
+    getFileList(ref, dir);
     _createVideoController(VideoFilePath.mlOutputPath, 1);
   }
 
@@ -218,33 +215,30 @@ class FileLibraryPageState extends ConsumerState<FileLibraryPage> {
             ),
             CardTemplate(
               title: '前回の実行後の動画',
-              child: File(VideoFilePath.mlOutputPath).existsSync()
-                ? initOutputController ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      height: outputController!.value.size.height/7,
-                      width: outputController!.value.size.width/7,
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      alignment: Alignment.center,
-                      child: VideoPlayer(outputController!),
+              child: initOutputController ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    height: outputController!.value.size.height/7,
+                    width: outputController!.value.size.width/7,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    alignment: Alignment.center,
+                    child: VideoPlayer(outputController!),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: IconButton(
-                        onPressed: () {outputController!.play();},
-                        icon: const Icon(Icons.restart_alt),
-                      ),
+                    child: IconButton(
+                      onPressed: () {outputController!.play();},
+                      icon: const Icon(Icons.restart_alt),
                     ),
-                  ],
-                ) :  const Center(
-                  child: CircularProgressIndicator(),
-                ) : Container(
-                  alignment: Alignment.center,
-                  child: const Text('アプリで作成されたファイルがありません'),
-                ),
+                  ),
+                ],
+              ) : Container(
+                alignment: Alignment.center,
+                child: const Text('前回実行された記録がありません'),
+              ),
             ),
             const SizedBox(height: 8,),
           ],

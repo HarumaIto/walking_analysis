@@ -64,11 +64,6 @@ object VisualizationUtils {
                     paintCircle
                 )
             }
-
-            var pointF = arrayOf<PointF>()
-            for (i in 0 .. 5 step 1) {
-                pointF += person.keyPoints[i+11].coordinate
-            }
         }
 
         return output

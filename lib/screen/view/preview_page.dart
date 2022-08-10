@@ -1,16 +1,18 @@
-import'dart:async';
+import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:walking_analysis/model/global_variable.dart';
-import 'package:walking_analysis/model/tflite_models.dart';
-import 'package:walking_analysis/repository/tflite_flutter_repository.dart';
 
 import 'dart:math' as math;
 import 'package:image/image.dart' as imglib;
 import 'package:walking_analysis/utility/image_utils.dart';
+
+import '../../utility/visualize_ml.dart';
 
 class PreviewPage extends StatefulWidget {
   const PreviewPage({Key? key}) : super(key: key);
@@ -23,8 +25,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   CameraDescription? _camera;
   CameraController? _controller;
   Widget? imageWidget;
-
-  TFLiteFlutterRepository tflite = TFLiteFlutterRepository();
 
   String _timeMs = '';
 
@@ -82,7 +82,6 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    print('build widget');
     return Scaffold(
       appBar: AppBar(
         title: const Text('リアルタイム検出'),
@@ -160,16 +159,28 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
     }
     _isDetecting = true;
 
-    if (tflite.interpreter == null) {
-      tflite = TFLiteFlutterRepository(
-          interpreter: Interpreter.fromAddress(tflite.interpreter!.address));
-    }
+    // 入力画像処理
     imglib.Image image = ImageUtils.convertCameraImage(cameraImage)!;
     if (Platform.isAndroid) {
       image = imglib.copyRotate(image, 90);
     }
-    Person person = tflite.predict(image);
-    print(person.toString());
+
+    // 機械学習処理を初期化
+    const MethodChannel channel = MethodChannel('walking_analysis/ml');
+    channel.invokeMethod("create", "movenetLightning");
+
+    // ポーズ推定
+    Uint8List imageBytes = image.getBytes();
+    Map map = await channel.invokeMethod('process', imageBytes);
+    // ネイティブからkeyPointを取得
+    final List keyPoints = map['keyPoint'];
+    ui.Image uiImage = await decodeImageFromList(imageBytes);
+    final outputImage = await createOutputImage(keyPoints, uiImage);
+
+    setState(() {
+      imageWidget = Image.memory(outputImage);
+    });
+
     _isDetecting = false;
   }
 }

@@ -37,7 +37,6 @@ dependencies:
   image_picker: ^0.8.4+8
   video_player: ^2.2.18
   path_provider: ^2.0.9
-  flutter_ffmpeg: ^0.4.2
   fraction: ^4.0.1
   intl: ^0.17.0
   image: ^3.1.0
@@ -54,9 +53,10 @@ dependencies:
   convex_bottom_bar: ^3.0.0
   fluttertoast: ^8.0.9
   firebase_core: ^1.17.1
-  google_mlkit_pose_detection: ^0.3.0
   firebase_crashlytics: ^2.8.2
   vector_math: ^2.1.2
+  ffmpeg_kit_flutter: 4.5.1-LTS
+  analyzer_plugin: ^0.11.1
 
 flutter_icons:
   android: "launcher_icon"
@@ -98,7 +98,6 @@ flutter:
   assets:
     - assets/app_icon.png
     - assets/comparison_data.csv
-    - assets/movenet_thunder.tflite
     - assets/e_walking_scene.png
     - assets/graph.png
     - assets/two_step.png

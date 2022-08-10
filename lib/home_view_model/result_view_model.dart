@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:walking_analysis/model/video_file_path.dart';
 import 'package:walking_analysis/repository/toast_repository.dart';
 import 'package:walking_analysis/utility/file_processor.dart';
@@ -69,7 +68,7 @@ class ResultViewModel extends ConsumerWidget {
     DateTime now = DateTime.now();
     String formattedDate = intl.DateFormat('yyyy-MM-dd–hh-mm-ss').format(now);
     String newFileName = formattedDate;
-    Directory dir = await getApplicationDocumentsDirectory();
+    Directory dir = Directory(VideoFilePath.myAppDirectoryPath);
     showDialog(context: context, barrierDismissible: false, builder: (_) {
       return AlertDialog(
         title: const Text('ファイル名を入力'),

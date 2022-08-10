@@ -108,18 +108,14 @@ class _TrimmingPageState extends State<TrimmingPage> {
             gradesRange.start.truncate()
     );
 
-    FFmpegKit.execute(
+    FFmpegKit.executeAsync(
         '-y -i ${widget.inputFile.path} -ss ${timeBoxControllerStart.text} -t ${durationFormatter(difference)} -c copy $outPath')
       .then((value) {
         if (widget.source == ImageSource.camera) {
           saveVideoTaken(outPath);
         }
-        // errorを回避するため
-        if (Platform.isIOS) {
-          createThumbnail(widget.inputFile.path, true, timeBoxControllerStart.text);
-        } else {
-          createThumbnail(outPath);
-        }
+        createThumbnail(widget.inputFile.path, true, timeBoxControllerStart.text);
+
         setState(() {
           progress = false;
         });

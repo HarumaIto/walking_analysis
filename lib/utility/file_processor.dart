@@ -38,12 +38,6 @@ Future<String> getTemporaryDirectoryPath() async {
   return '${tmpDir.path}/local';
 }
 
-/// アプリケーション専用のディレクトリへのパス
- Future<String> getStorageDirectoryPath() async {
-  Directory appDocDir = await getApplicationDocumentsDirectory();
-  return appDocDir.path;
-}
-
 /// 撮影した動画を写真またはギャラリーへ保存
 void saveVideoTaken(String path) {
   SharedPreferences pref = UserSettingPreference().prefs!;
@@ -85,6 +79,7 @@ void getFileList(WidgetRef ref, Directory dir) async {
   list.remove('select.mp4');
   list.remove('input.mp4');
   list.remove('output.mp4');
+  list.remove('thumb.jpg');
 
   // 並べ替えてproviderにセット
   list.sort((a, b) => a.compareTo(b));
