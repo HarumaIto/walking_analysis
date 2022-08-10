@@ -39,9 +39,18 @@ import Flutter
         let size: CGSize = CGSize(width: uiImage.size.width, height: uiImage.size.height)
         let persons = moveNet.estimatePoses(pixelBuffer: cvPixelBuffer!, sourceSize: size)
         var angleList: [Int] = []
-        
+        var keyPoints: [[Double]] = []
+
+        // 関節角度を取得
         if persons != nil {
             let person = persons![0]
+            
+            // 全てのkeyPointを取得
+            for keyPoint in person.keyPoints {
+                let row = [Double(keyPoint.coordinate.x), Double(keyPoint.coordinate.y)]
+                keyPoints.append(row)
+            }
+            
             let lefthip = person.keyPoints[BodyPart.LEFT_HIP.rawValue]
             let leftKnee = person.keyPoints[BodyPart.LEFT_KNEE.rawValue]
             let leftAnkle = person.keyPoints[BodyPart.LEFT_ANKLE.rawValue]
@@ -56,14 +65,16 @@ import Flutter
             angleList.append(rightKneeAngle)
         }
         
-        let outputImage = visualize(persons: persons!, uiImage: uiImage, size: size)
-        let data: Data = outputImage.pngData()!
-        let outputByteArray = FlutterStandardTypedData(bytes: data)
+        /*
+         let outputImage = visualize(persons: persons!, uiImage: uiImage, size: size)
+         let data: Data = outputImage.pngData()!
+         let outputByteArray = FlutterStandardTypedData(bytes: data)
+         */
         
         // 辞書を初期化
         let dictionary: NSDictionary = [
             "angleList": angleList,
-            "image": outputByteArray
+            "keyPoint": keyPoints,
         ]
         
         return dictionary

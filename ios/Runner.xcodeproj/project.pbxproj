@@ -76,7 +76,6 @@
 				149646B5684E5886D705521C /* Pods-Runner.release.xcconfig */,
 				A3F999AC0AB60F5BECB8EC52 /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -404,12 +403,13 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = PTL7T63A8L;
 				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=*]" = arm64;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.hanjukukobo.walkingAnalysis;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hanjukukobo.walkingAnalysis1.0.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -542,7 +542,7 @@
 					"@executable_path/Frameworks",
 				);
 				MOE_COPY_ANDROID_CACERTS = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hanjukukobo.walkingAnalysis;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hanjukukobo.walkingAnalysis1.0.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -567,7 +567,7 @@
 					"@executable_path/Frameworks",
 				);
 				MOE_COPY_ANDROID_CACERTS = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hanjukukobo.walkingAnalysis;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hanjukukobo.walkingAnalysis1.0.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

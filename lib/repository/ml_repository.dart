@@ -2,11 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:analyzer_plugin/utilities/pair.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:walking_analysis/utility/visualize_ml.dart';
 
 import '../model/global_variable.dart';
 import '../model/images_info.dart';
@@ -67,11 +70,10 @@ class MlRepository {
         if (angleList.isEmpty) angleList..add(0)..add(0);
         angleLists.add(angleList);
 
-        // ネイティブから画像を取得
-        final Uint8List imageByte = map['image'];
-        ui.Image image = await decodeImageFromList(imageByte);
-
-        await _overwriteImage(image, imagePath);
+        // ネイティブからkeyPointを取得
+        final List keyPoints = map['keyPoint'];
+        ui.Image image = await decodeImageFromList(imageBytes);
+        await createOutputImage(keyPoints, image, imagePath);
 
         nowCount++;
         double percent = nowCount / maxCount;
@@ -87,7 +89,7 @@ class MlRepository {
     } catch (e) {
       print(e);
     }
-
+    // 終了処理
     channel.invokeMethod('close');
     ref.read(progressValProvider.notifier).setIsDeterminate(false);
     ref.read(mlStateProvider.notifier).state = '出力処理中';
@@ -115,17 +117,5 @@ class MlRepository {
     ref.read(restartStateProvider.notifier).state = true;
     ref.read(saveVideoStateProvider.notifier).state = true;
     ref.read(mlStateProvider.notifier).state = '';
-  }
-
-  // 元画像と機械学習の結果を合成して書き換える
-  Future<bool> _overwriteImage(ui.Image image, String path) async {
-    // 画像を生成
-    final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    final file = File(path);
-    final buffer = pngBytes?.buffer;
-    file.writeAsBytesSync(buffer!.asUint8List(pngBytes!.offsetInBytes, pngBytes.lengthInBytes));
-
-    return true;
   }
 }

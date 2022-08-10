@@ -42,7 +42,7 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
         _camera!,
         ResolutionPreset.high,
         enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.yuv420,
+        imageFormatGroup: ImageFormatGroup.bgra8888,
       );
       _controller = cameraController;
       return _controller!.initialize();
