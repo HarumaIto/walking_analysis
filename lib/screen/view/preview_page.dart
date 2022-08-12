@@ -21,12 +21,15 @@ class PreviewPage extends StatefulWidget {
   PreviewPageState createState() => PreviewPageState();
 }
 
-class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
+class PreviewPageState extends State<PreviewPage> {
   CameraDescription? _camera;
   CameraController? _controller;
   Widget? imageWidget;
 
-  String _timeMs = '';
+  static const MethodChannel channel = MethodChannel('walking_analysis/ml');
+
+  final stopWatch = Stopwatch();
+  String timeMs = '';
 
   late Future<void> isInitializedCamera;
   bool _isStreaming = false;
@@ -61,9 +64,10 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
     _isStreaming = false;
     if (_controller!.value.isStreamingImages) {
       _controller!.stopImageStream();
+      imageWidget = null;
     }
     setState(() {
-      _timeMs = '';
+      timeMs = '';
     });
   }
 
@@ -71,12 +75,16 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     isInitializedCamera = _initializeCamera();
+
+    // 機械学習処理を初期化
+    channel.invokeMethod("create", 1);
   }
 
   @override
   void dispose() {
     // ウィジェットが破棄されたら、コントローラーを破棄
     _controller!.dispose();
+    channel.invokeMethod('close');
     super.dispose();
   }
 
@@ -117,9 +125,7 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
                   child: OverflowBox(
                     maxWidth: maxWidth,
                     maxHeight: maxHeight,
-                    child: CustomPaint(
-                      child: imageWidget,
-                    ),
+                    child: imageWidget,
                   ),
                 ),
                 _isStreaming ? Align(
@@ -128,7 +134,7 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
                     color: Colors.white70,
                     padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
                     child: Text(
-                      _timeMs,
+                      timeMs,
                       style: const TextStyle(
                         fontSize: 20,
                         color: Colors.black87,
@@ -159,28 +165,35 @@ class PreviewPageState extends State<PreviewPage> with WidgetsBindingObserver {
     }
     _isDetecting = true;
 
+    stopWatch.start();
+
     // 入力画像処理
     imglib.Image image = ImageUtils.convertCameraImage(cameraImage)!;
     if (Platform.isAndroid) {
       image = imglib.copyRotate(image, 90);
     }
 
-    // 機械学習処理を初期化
-    const MethodChannel channel = MethodChannel('walking_analysis/ml');
-    channel.invokeMethod("create", "movenetLightning");
-
     // ポーズ推定
-    Uint8List imageBytes = image.getBytes();
-    Map map = await channel.invokeMethod('process', imageBytes);
+    List<int> jpgImage = imglib.encodeJpg(image);
+    Uint8List imageBytes = Uint8List.fromList(jpgImage);
+
     // ネイティブからkeyPointを取得
-    final List keyPoints = map['keyPoint'];
-    ui.Image uiImage = await decodeImageFromList(imageBytes);
+    Map map = await PreviewPageState.channel.invokeMethod('process', imageBytes);
+    final List? keyPoints = map['keyPoint'];
+
+    // image library -> uiImage
+    ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
+    ui.FrameInfo frameInfo = await codec.getNextFrame();
+    final uiImage = frameInfo.image;
     final outputImage = await createOutputImage(keyPoints, uiImage);
 
+    stopWatch.stop();
     setState(() {
+      timeMs = '${stopWatch.elapsedMilliseconds} ms';
       imageWidget = Image.memory(outputImage);
     });
 
+    stopWatch.reset();
     _isDetecting = false;
   }
 }

@@ -27,31 +27,36 @@ final bodyJoints = [
 ];
 
 // 元画像と機械学習の結果を合成して書き換える
-Future<Uint8List> createOutputImage(List keyPoints, ui.Image image) async {
+Future<Uint8List> createOutputImage(List? keyPoints, ui.Image image) async {
   // canvasの用意
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
   final paint = Paint()..isAntiAlias = true;
-  final paintCircle = Paint()
-    ..strokeWidth = 6
-    ..color = Colors.red
-    ..style = PaintingStyle.fill;
-  final paintLine = Paint()
-    ..strokeWidth = 4
-    ..color = Colors.red
-    ..style = PaintingStyle.stroke;
 
   // 画像描画
   canvas.drawImage(image, Offset.zero, paint);
-  // 点を描画
-  for (List keyPoint in keyPoints) {
-    canvas.drawCircle(Offset(keyPoint[0], keyPoint[1]), 6, paintCircle);
-  }
-  // 線を描画
-  for (int i=0; i<bodyJoints.length; i++) {
-    var point1 = keyPoints[bodyJoints[i].first];
-    var point2 = keyPoints[bodyJoints[i].last];
-    canvas.drawLine(Offset(point1[0], point1[1]), Offset(point2[0], point2[1]), paintLine);
+
+  if (keyPoints != null) {
+    // Painterを用意
+    final paintCircle = Paint()
+      ..strokeWidth = 6
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+    final paintLine = Paint()
+      ..strokeWidth = 4
+      ..color = Colors.red
+      ..style = PaintingStyle.stroke;
+
+    // 点を描画
+    for (List keyPoint in keyPoints) {
+      canvas.drawCircle(Offset(keyPoint[0], keyPoint[1]), 6, paintCircle);
+    }
+    // 線を描画
+    for (int i=0; i<bodyJoints.length; i++) {
+      var point1 = keyPoints[bodyJoints[i].first];
+      var point2 = keyPoints[bodyJoints[i].last];
+      canvas.drawLine(Offset(point1[0], point1[1]), Offset(point2[0], point2[1]), paintLine);
+    }
   }
 
   // canvasからエンコード
