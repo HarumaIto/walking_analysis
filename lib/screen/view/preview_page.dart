@@ -32,12 +32,12 @@ class PreviewPageState extends State<PreviewPage> {
   final stopWatch = Stopwatch();
   String timeMs = '';
 
-  late Future<bool> isInitializedCamera;
+  bool isUseCamera = false;
   bool _isStreaming = false;
   bool _isDetecting = false;
 
   // カメラの初期化処理
-  Future<bool> _initializeCamera() async {
+  void _initializeCamera() async {
     if (await PermissionRequest.cameraRequest()) {
       List<CameraDescription> cameras = await availableCameras();
       _camera = cameras.first;
@@ -50,12 +50,12 @@ class PreviewPageState extends State<PreviewPage> {
           imageFormatGroup: ImageFormatGroup.bgra8888,
         );
         _controller = cameraController;
-        _controller!.initialize();
-      }
+        await _controller!.initialize();
 
-      return Future.value(true);
-    } else {
-      return Future.value(false);
+        setState(() {
+          isUseCamera = true;
+        });
+      }
     }
   }
 
@@ -71,15 +71,17 @@ class PreviewPageState extends State<PreviewPage> {
       _controller!.stopImageStream();
       imageWidget = null;
     }
-    setState(() {
-      timeMs = '';
-    });
+    if (mounted) {
+      setState(() {
+        timeMs = '';
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    isInitializedCamera = _initializeCamera();
+    _initializeCamera();
 
     // 機械学習処理を初期化
     channel.invokeMethod("create", 1);
@@ -87,6 +89,7 @@ class PreviewPageState extends State<PreviewPage> {
 
   @override
   void dispose() {
+    if (_isStreaming) _stop();
     // ウィジェットが破棄されたら、コントローラーを破棄
     _controller!.dispose();
     channel.invokeMethod('close');
@@ -95,71 +98,56 @@ class PreviewPageState extends State<PreviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size tmp = Size(GlobalVar.screenWidth, GlobalVar.screenHeight);
+    double screenH = math.max(tmp.height, tmp.width);
+    double screenW = math.min(tmp.height, tmp.width);
+    if (isUseCamera) tmp = _controller!.value.previewSize!;
+    double previewH = math.max(tmp.height, tmp.width);
+    double previewW = math.min(tmp.height, tmp.width);
+    double screenRatio = screenH / screenW;
+    double previewRatio = previewH / previewW;
+    double maxWidth = screenRatio > previewRatio ? screenH / previewH * previewW : screenW;
+    double maxHeight = screenRatio > previewRatio ? screenH : screenW / previewW * previewH;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('リアルタイム検出'),
         centerTitle: true,
       ),
-      body: FutureBuilder(
-        future: isInitializedCamera,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            if (snapshot.data == false) {
-              return const Center(
-                child: Text('カメラの権限が許可されていません'),
-              );
-            } else {
-              Size tmp = Size(GlobalVar.screenWidth, GlobalVar.screenHeight);
-              double screenH = math.max(tmp.height, tmp.width);
-              double screenW = math.min(tmp.height, tmp.width);
-              tmp = _controller!.value.previewSize!;
-              double previewH = math.max(tmp.height, tmp.width);
-              double previewW = math.min(tmp.height, tmp.width);
-              double screenRatio = screenH / screenW;
-              double previewRatio = previewH / previewW;
-              double maxWidth = screenRatio > previewRatio ? screenH / previewH * previewW : screenW;
-              double maxHeight = screenRatio > previewRatio ? screenH : screenW / previewW * previewH;
-
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  !_isStreaming ? Align(
-                    alignment: const Alignment(0, 0),
-                    child: OverflowBox(
-                      maxWidth: maxWidth,
-                      maxHeight: maxHeight,
-                      child: CameraPreview(_controller!),
-                    ),
-                  ) : Align(
-                    alignment: const Alignment(0, 0),
-                    child: OverflowBox(
-                      maxWidth: maxWidth,
-                      maxHeight: maxHeight,
-                      child: imageWidget,
-                    ),
-                  ),
-                  _isStreaming ? Align(
-                    alignment: const Alignment(-0.96, -0.98),
-                    child: Container(
-                      color: Colors.white70,
-                      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                      child: Text(
-                        timeMs,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                  ) : Container(),
-                ],
-              );
-            }
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+      body: isUseCamera ? Stack(
+        fit: StackFit.expand,
+        children: [
+          !_isStreaming ? Align(
+            alignment: const Alignment(0, 0),
+            child: OverflowBox(
+              maxWidth: maxWidth,
+              maxHeight: maxHeight,
+              child: CameraPreview(_controller!),
+            ),
+          ) : Align(
+            alignment: const Alignment(0, 0),
+            child: OverflowBox(
+              maxWidth: maxWidth,
+              maxHeight: maxHeight,
+              child: imageWidget,
+            ),
+          ),
+          _isStreaming ? Align(
+            alignment: const Alignment(-0.96, -0.98),
+            child: Container(
+              color: Colors.white70,
+              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+              child: Text(
+                timeMs,
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ) : Container(),
+        ],
+      ) : const Center(child: CircularProgressIndicator()),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _isStreaming ? _stop() : _start(),
         child: _isStreaming
@@ -183,11 +171,10 @@ class PreviewPageState extends State<PreviewPage> {
     if (Platform.isAndroid) {
       image = imglib.copyRotate(image, 90);
     }
-
-    // ポーズ推定
     List<int> jpgImage = imglib.encodeJpg(image);
     Uint8List imageBytes = Uint8List.fromList(jpgImage);
 
+    // ポーズ推定
     // ネイティブからkeyPointを取得
     Map map = await PreviewPageState.channel.invokeMethod('process', imageBytes);
     final List? keyPoints = map['keyPoint'];
@@ -199,10 +186,12 @@ class PreviewPageState extends State<PreviewPage> {
     final outputImage = await createOutputImage(keyPoints, uiImage);
 
     stopWatch.stop();
-    setState(() {
-      timeMs = '${stopWatch.elapsedMilliseconds} ms';
-      imageWidget = Image.memory(outputImage);
-    });
+    if (mounted) {
+      setState(() {
+        timeMs = '${stopWatch.elapsedMilliseconds} ms';
+        imageWidget = Image.memory(outputImage);
+      });
+    }
 
     stopWatch.reset();
     _isDetecting = false;
