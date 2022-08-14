@@ -58,17 +58,17 @@ class MoveNet {
     
     init(index: Int) {
         // モデルパスの生成
-        var modelName: String
-        if index == 0 {
+        var modelName: String = ""
+        if (index == 0) {
             modelName = THUNDER_FILE
             inputWidth = 256
             inputHeight = 256
-        } else {
+        } else if (index == 1) {
             modelName = LIGHTNING_FILE
             inputWidth = 192
             inputHeight = 192
         }
-        let modelPath = Bundle.main.path(
+        let modelPath:String = Bundle.main.path(
             forResource: modelName,
             ofType: "tflite"
         )!

@@ -12,6 +12,7 @@ import 'dart:math' as math;
 import 'package:image/image.dart' as imglib;
 import 'package:walking_analysis/utility/image_utils.dart';
 
+import '../../repository/permission_repository.dart';
 import '../../utility/visualize_ml.dart';
 
 class PreviewPage extends StatefulWidget {
@@ -31,27 +32,31 @@ class PreviewPageState extends State<PreviewPage> {
   final stopWatch = Stopwatch();
   String timeMs = '';
 
-  late Future<void> isInitializedCamera;
+  late Future<bool> isInitializedCamera;
   bool _isStreaming = false;
   bool _isDetecting = false;
 
   // カメラの初期化処理
-  Future _initializeCamera() async {
-    List<CameraDescription> cameras = await availableCameras();
-    _camera = cameras.first;
+  Future<bool> _initializeCamera() async {
+    if (await PermissionRequest.cameraRequest()) {
+      List<CameraDescription> cameras = await availableCameras();
+      _camera = cameras.first;
 
-    if (_controller == null) {
-      final CameraController cameraController = CameraController(
-        _camera!,
-        ResolutionPreset.high,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.bgra8888,
-      );
-      _controller = cameraController;
-      return _controller!.initialize();
+      if (_controller == null) {
+        final CameraController cameraController = CameraController(
+          _camera!,
+          ResolutionPreset.high,
+          enableAudio: false,
+          imageFormatGroup: ImageFormatGroup.bgra8888,
+        );
+        _controller = cameraController;
+        _controller!.initialize();
+      }
+
+      return Future.value(true);
+    } else {
+      return Future.value(false);
     }
-
-    return Future.value(true);
   }
 
   void _start() {
@@ -95,55 +100,61 @@ class PreviewPageState extends State<PreviewPage> {
         title: const Text('リアルタイム検出'),
         centerTitle: true,
       ),
-      body: FutureBuilder<void>(
+      body: FutureBuilder(
         future: isInitializedCamera,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            Size tmp = Size(GlobalVar.screenWidth, GlobalVar.screenHeight);
-            double screenH = math.max(tmp.height, tmp.width);
-            double screenW = math.min(tmp.height, tmp.width);
-            tmp = _controller!.value.previewSize!;
-            double previewH = math.max(tmp.height, tmp.width);
-            double previewW = math.min(tmp.height, tmp.width);
-            double screenRatio = screenH / screenW;
-            double previewRatio = previewH / previewW;
-            double maxWidth = screenRatio > previewRatio ? screenH / previewH * previewW : screenW;
-            double maxHeight = screenRatio > previewRatio ? screenH : screenW / previewW * previewH;
+          if (snapshot.connectionState != ConnectionState.done) {
+            if (snapshot.data == false) {
+              return const Center(
+                child: Text('カメラの権限が許可されていません'),
+              );
+            } else {
+              Size tmp = Size(GlobalVar.screenWidth, GlobalVar.screenHeight);
+              double screenH = math.max(tmp.height, tmp.width);
+              double screenW = math.min(tmp.height, tmp.width);
+              tmp = _controller!.value.previewSize!;
+              double previewH = math.max(tmp.height, tmp.width);
+              double previewW = math.min(tmp.height, tmp.width);
+              double screenRatio = screenH / screenW;
+              double previewRatio = previewH / previewW;
+              double maxWidth = screenRatio > previewRatio ? screenH / previewH * previewW : screenW;
+              double maxHeight = screenRatio > previewRatio ? screenH : screenW / previewW * previewH;
 
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                !_isStreaming ? Align(
-                  alignment: const Alignment(0, 0),
-                  child: OverflowBox(
-                    maxWidth: maxWidth,
-                    maxHeight: maxHeight,
-                    child: CameraPreview(_controller!),
-                  ),
-                ) : Align(
-                  alignment: const Alignment(0, 0),
-                  child: OverflowBox(
-                    maxWidth: maxWidth,
-                    maxHeight: maxHeight,
-                    child: imageWidget,
-                  ),
-                ),
-                _isStreaming ? Align(
-                  alignment: const Alignment(-0.96, -0.98),
-                  child: Container(
-                    color: Colors.white70,
-                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                    child: Text(
-                      timeMs,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.black87,
-                      ),
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  !_isStreaming ? Align(
+                    alignment: const Alignment(0, 0),
+                    child: OverflowBox(
+                      maxWidth: maxWidth,
+                      maxHeight: maxHeight,
+                      child: CameraPreview(_controller!),
+                    ),
+                  ) : Align(
+                    alignment: const Alignment(0, 0),
+                    child: OverflowBox(
+                      maxWidth: maxWidth,
+                      maxHeight: maxHeight,
+                      child: imageWidget,
                     ),
                   ),
-                ) : Container(),
-              ],
-            );
+                  _isStreaming ? Align(
+                    alignment: const Alignment(-0.96, -0.98),
+                    child: Container(
+                      color: Colors.white70,
+                      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                      child: Text(
+                        timeMs,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ) : Container(),
+                ],
+              );
+            }
           } else {
             return const Center(child: CircularProgressIndicator());
           }

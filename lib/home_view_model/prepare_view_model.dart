@@ -76,12 +76,13 @@ class PrepareViewModel extends ConsumerWidget {
                     TextButton(
                       child: const Text("はい", style: TextStyle(color: Colors.blueAccent)),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context); // ダイアログを閉じる
                         ref.read(processStateProvider.notifier).state = true;
-                        Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (_) => TrimmingPage(source),
-                            ), (_) => false);
+                        Navigator.pop(context); // 説明ページを閉じる
+                        // トリミングページへ
+                        Navigator.push(
+                            context, MaterialPageRoute(builder: (_) => TrimmingPage(source))
+                        );
                       },
                     )
                   ],
@@ -103,13 +104,11 @@ class PrepareViewModel extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        inputBytes != null
-            ? Container(
+        inputBytes != null ? Container(
             height: imageHeight,
             alignment: Alignment.center,
             child: Image.memory(inputBytes)
-        )
-            : SizedBox(
+        ) : SizedBox(
             height: imageHeight,
             child: Container(
               alignment: Alignment.center,
@@ -120,34 +119,24 @@ class PrepareViewModel extends ConsumerWidget {
           children: <Widget>[
             OriginalIconButton(
               icon: Icons.camera_alt_outlined,
-              onPressed: prepareState ? () {
-                PermissionRequest(
-                  request: Permissions.camera,
-                  callback: (granted) {
-                    if (granted) {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (_) =>
+              onPressed: prepareState ? () async {
+                if (await PermissionRequest.cameraRequest()) {
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (_) =>
                           ExplainCondition(ImageSource.camera, ref)));
-                    }
-                  }
-                );
+                }
               } : null,
               text: const Text('撮影'),
             ),
             const SizedBox(width: 8,),
             OriginalIconButton(
               icon: Icons.folder_outlined,
-              onPressed: prepareState ? () {
-                PermissionRequest(
-                  request: Permissions.storage,
-                  callback: (granted) {
-                    if (granted) {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (_) =>
+              onPressed: prepareState ? () async {
+                if (await PermissionRequest.storageRequest()) {
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (_) =>
                           ExplainCondition(ImageSource.gallery, ref,)));
-                    }
-                  }
-                );
+                }
               } : null,
               text: const Text('選択'),
             ),

@@ -11,7 +11,6 @@ import '../model/global_variable.dart';
 import '../model/video_file_path.dart';
 import '../repository/thumbnail_repository.dart';
 import '../widget/rangeslider.dart';
-import 'main_page.dart';
 
 class TrimmingPage extends StatefulWidget {
   TrimmingPage(this.source, {Key? key}) : super(key: key);
@@ -119,10 +118,9 @@ class _TrimmingPageState extends State<TrimmingPage> {
         setState(() {
           progress = false;
         });
-        // ignore: use_build_context_synchronously
-        Navigator.push(
-          context, MaterialPageRoute(builder: (_) =>  const MyMainPage())
-        );
+
+        // 元のページに戻る
+        Navigator.pop(context);
       });
   }
 

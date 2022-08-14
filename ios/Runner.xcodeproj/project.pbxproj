@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		3400C8D628A8827A00723D9F /* movenet_lightning.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 347A6E7028A6AD400046D078 /* movenet_lightning.tflite */; };
 		34425125288F9C71001880EE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 34425124288F9C71001880EE /* GoogleService-Info.plist */; };
 		34668C13289510C10073C8B6 /* MoveNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34668C12289510C10073C8B6 /* MoveNet.swift */; };
 		346C43FC2898064900207350 /* movenet_thunder.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 346C43FB2898064900207350 /* movenet_thunder.tflite */; };
@@ -40,6 +41,7 @@
 		34425124288F9C71001880EE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		34668C12289510C10073C8B6 /* MoveNet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveNet.swift; sourceTree = "<group>"; };
 		346C43FB2898064900207350 /* movenet_thunder.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = movenet_thunder.tflite; sourceTree = "<group>"; };
+		347A6E7028A6AD400046D078 /* movenet_lightning.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = movenet_lightning.tflite; sourceTree = "<group>"; };
 		349B6D0A2898EAC1001BD57B /* VisualizationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizationUtils.swift; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		513527743FC6A2986EB429CA /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 			isa = PBXGroup;
 			children = (
 				346C43FB2898064900207350 /* movenet_thunder.tflite */,
+				347A6E7028A6AD400046D078 /* movenet_lightning.tflite */,
 				34668C11289510A70073C8B6 /* MachineLearning */,
 				34425124288F9C71001880EE /* GoogleService-Info.plist */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -212,6 +215,7 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				346C43FC2898064900207350 /* movenet_thunder.tflite in Resources */,
+				3400C8D628A8827A00723D9F /* movenet_lightning.tflite in Resources */,
 				34425125288F9C71001880EE /* GoogleService-Info.plist in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 			);
