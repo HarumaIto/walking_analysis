@@ -66,6 +66,7 @@ void deleteCache() async {
   Directory directory = await getTemporaryDirectory();
   Directory localDir = Directory('${directory.path}/local');
   int length = localDir.listSync(followLinks: false).length;
+  print('$length個のファイルを削除しました');
   Directory(localDir.path).delete(recursive: true).then((value) =>
       showToast('$length個の一時的ファイルを削除しました')
   );

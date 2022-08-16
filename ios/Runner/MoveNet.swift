@@ -10,244 +10,354 @@ import Foundation
 import Accelerate
 
 struct Person {
-    var id: Int = -1
     let keyPoints: [KeyPoint]
-    let boundingBox: CGRect? = nil
-    let score: Float
+    let score: Float32
 }
 
-enum BodyPart: Int, CaseIterable {
-    case NOSE = 0
-    case LEFT_EYE = 1
-    case RIGHT_EYE = 2
-    case LEFT_EAR = 3
-    case RIGHT_EAR = 4
-    case LEFT_SHOULDER = 5
-    case RIGHT_SHOULDER = 6
-    case LEFT_ELBOW = 7
-    case RIGHT_ELBOW = 8
-    case LEFT_WRIST = 9
-    case RIGHT_WRIST = 10
-    case LEFT_HIP = 11
-    case RIGHT_HIP = 12
-    case LEFT_KNEE = 13
-    case RIGHT_KNEE = 14
-    case LEFT_ANKLE = 15
-    case RIGHT_ANKLE = 16
+enum BodyPart: String, CaseIterable {
+    case nose = "nose"
+    case leftEye = "left eye"
+    case rightEye = "right eye"
+    case leftEar = "left ear"
+    case rightEar = "right ear"
+    case leftShoulder = "left shoulder"
+    case rightShoulder = "right shoulder"
+    case leftElbow = "left elbow"
+    case rightElbow = "right elbow"
+    case leftWrist = "left wrist"
+    case rightWrist = "right wrist"
+    case leftHip = "left hip"
+    case rightHip = "right hip"
+    case leftKnee = "left knee"
+    case rightKnee = "right knee"
+    case leftAnkle = "left ankle"
+    case rightAnkle = "right ankle"
+
+    /// Get the index of the body part in the array returned by pose estimation models.
+    var position: Int {
+        return BodyPart.allCases.firstIndex(of: self) ?? 0
+    }
 }
 
 struct KeyPoint {
     let bodyPart: BodyPart
     var coordinate: CGPoint
-    let score: Float
+    let score: Float32
+}
+
+struct FileInfo {
+    var name: String
+    var ext: String
+}
+
+enum PoseEstimationError: Error {
+    case modelBusy
+    case preprocessingFailed
+    case inferenceFaied
+    case postProcessingFailed
 }
 
 class MoveNet {
-    init() {}
+    // 使用する変数と定数を準備
+    private var interpreter: Interpreter!
     
-    let THUNDER_FILE: String = "movenet_thunder"
-    let LIGHTNING_FILE: String = "movenet_lightning"
+    private var inputTensor: Tensor!
+    private var outputTensor: Tensor!
     
-    let BATCH_SIZE: Float = 1
-    let INPUT_CHANNELS: Float = 3
+    private var torsoExpansionRatio = 1.9
+    private var bodyExpandsionRatio = 1.2
+    private let imageMean: Float = 0
+    private let imageStd: Float = 1
+    private let minCropKeyPointScore: Float32 = 0.2
+    private var cropRegion: RectF?
+    private var isProcessing = false
+
+    private let movenetLightningFile = FileInfo(name: "movenet_lightning", ext: "tflite")
+    private let movenetThunderFile = FileInfo(name: "movenet_thunder", ext: "tflite")
     
-    var inputWidth: Float = 256
-    var inputHeight: Float = 256
-    
-    var interpreter: Interpreter!
-    
-    init(index: Int) {
-        // モデルパスの生成
-        var modelName: String = ""
-        if (index == 0) {
-            modelName = THUNDER_FILE
-            inputWidth = 256
-            inputHeight = 256
-        } else if (index == 1) {
-            modelName = LIGHTNING_FILE
-            inputWidth = 192
-            inputHeight = 192
+    // 初期化コンストラクタ
+    init(model: Int) {
+        // 使用するモデルを用意
+        var fileInfo: FileInfo = movenetThunderFile
+        switch model {
+        case 0:
+            fileInfo = movenetThunderFile
+        case 1:
+            fileInfo = movenetLightningFile
+        default:
+            break
         }
-        let modelPath:String = Bundle.main.path(
-            forResource: modelName,
-            ofType: "tflite"
+        let modelPath: String = Bundle.main.path(
+            forResource: fileInfo.name,
+            ofType: fileInfo.ext
         )!
-        // インタプリタオプションの生成
+
+        // interpreterのoptionを用意
         var options = Interpreter.Options()
-        options.threadCount = 1
-        // インタプリタの生成
+        options.threadCount = 4
+
+        // 将来的にgpuDelegateを実装
+        var delegates: [Delegate]? = nil
+        
         do {
-            interpreter = try Interpreter(modelPath: modelPath, options: options)
+            // Interpreterを初期化
+            interpreter = try Interpreter(modelPath: modelPath, options: options, delegates: delegates)
             try interpreter.allocateTensors()
-        } catch let error {
-            print(error.localizedDescription)
-        }
+
+            // 入出力用の変数を用意
+            inputTensor = try interpreter.input(at: 0)
+            outputTensor = try interpreter.output(at: 0)
+        } catch { }
     }
     
-    func estimatePoses(pixelBuffer: CVPixelBuffer, sourceSize: CGSize) -> [Person]? {
-        // 画像のクロップとスケーリング
-        let scaledSize = CGSize(width: Int(inputWidth), height: Int(inputHeight))
-        guard let cropPixelBuffer = pixelBuffer.centerThumbnail(offsize: scaledSize)
-            else { return nil }
+    // MoveNet推論
+    func estimatePoses(on pixelBuffer: CVPixelBuffer) -> Person? {
+        // 入力画像を用意
+        let data = preprocess(pixelBuffer)!
         
-        let outputTnesor: Tensor
         do {
-            // RGBデータの生成
-            let inputTensor = try interpreter.input(at: 0)
-            let rgbData = buffer2rgbData(
-                cropPixelBuffer,
-                byteCount: Int(BATCH_SIZE * inputWidth * inputHeight * INPUT_CHANNELS),
-                isModelQuantized: inputTensor.dataType == .uInt8)
-            
-            // 推論の実行
-            try interpreter.copy(rgbData!, toInputAt: 0)
+            // Data型からinputTensorに変換
+            try interpreter.copy(data, toInputAt: 0)
+
+            // Run TensorFlowLite
             try interpreter.invoke()
-            outputTnesor = try interpreter.output(at: 0)
-        } catch let error {
-            print(error.localizedDescription)
-            return nil
-        }
-        let output: [Float] = [Float32](unsafeData: outputTnesor.data) ?? []
-        let numKeyPoints = output.count / 3
-        let widthRaito = Float(sourceSize.width) / inputWidth
-        let heightRatio = Float(sourceSize.height) / inputHeight
+            // 推論結果を取得
+            outputTensor = try interpreter.output(at: 0)
+        } catch {}
         
-        var positions: [Float] = []
-        var keyPoints: [KeyPoint] = []
-        var totalScore: Float = 0.0
+        // 推論結果からPerson型で取得
+        let person = postprocess(imageSize: pixelBuffer.size, modelOutput: outputTensor)
         
-        for idx in 0..<numKeyPoints {
-            let x = output[idx * 3 + 1] * inputWidth * widthRaito
-            let y = output[idx * 3 + 0] * inputHeight * heightRatio
-            
-            positions.append(x)
-            positions.append(y)
-            let score = output[idx * 3 + 2]
-            keyPoints.append(
-                KeyPoint(
-                    bodyPart: BodyPart(rawValue: idx)!,
-                    coordinate: CGPoint(x: Double(x), y: Double(y)),
-                    score: score
-                )
-            )
-            totalScore += score
-        }
-        
-        return [Person(keyPoints: keyPoints, score: totalScore / Float(numKeyPoints))]
+        return person
     }
     
-    // PixelBuffer→rgbData
-    private func buffer2rgbData(_ buffer: CVPixelBuffer,
-        byteCount: Int, isModelQuantized: Bool) -> Data? {
-        //PixelBuffer→bufferData
-        CVPixelBufferLockBaseAddress(buffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
-        guard let mutableRawPointer = CVPixelBufferGetBaseAddress(buffer) else {
-            return nil
-        }
-        let count = CVPixelBufferGetDataSize(buffer)
-        let bufferData = Data(bytesNoCopy: mutableRawPointer,
-            count: count, deallocator: .none)
-        
-        //bufferData→rgbBytes
-        var rgbBytes = [UInt8](repeating: 0, count: byteCount)
-        var index = 0
-        for component in bufferData.enumerated() {
-            let offset = component.offset
-            let isAlphaComponent = (offset % 4) == 3
-            guard !isAlphaComponent else {continue}
-            rgbBytes[index] = component.element
-            index += 1
+    // CVPixelBuffer to Data
+    private func preprocess(_ pixelBuffer: CVPixelBuffer) -> Data? {
+        let sourcePixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer)
+        assert(
+          sourcePixelFormat == kCVPixelFormatType_32BGRA
+            || sourcePixelFormat == kCVPixelFormatType_32ARGB)
+        // inputImageをtargetSquereのmodelSizeにリサイズ
+        let dimensions = inputTensor.shape.dimensions
+        let inputWidth = CGFloat(dimensions[1])
+        let inputHeight = CGFloat(dimensions[2])
+        let imageWidth = pixelBuffer.size.width
+        let imageHeight = pixelBuffer.size.height
+
+        let cropRegion = self.cropRegion ??
+          initialCropRegion(imageWidth: imageWidth, imageHeight: imageHeight)
+        self.cropRegion = cropRegion
+
+        let rectF = RectF(
+            left: cropRegion.left * imageWidth,
+            top: cropRegion.top * imageHeight,
+            right: cropRegion.right * imageWidth,
+            bottom: cropRegion.bottom * imageHeight
+        )
+
+        // Detect region
+        let modelSize = CGSize(width: inputWidth, height: inputHeight)
+        guard let thumbnail = pixelBuffer.cropAndResize(fromRect: rectF.rect, toSize: modelSize) else {
+          return nil
         }
 
-        //rgbBytes→rgbData
-        if isModelQuantized {return Data(rgbBytes)}
-        return Data(copyingBufferOf: rgbBytes.map{Float($0)/255.0})
-    }
-}
-
-extension CVPixelBuffer {
-    func centerThumbnail(offsize size: CGSize ) -> CVPixelBuffer? {
-        let imageWidth = CVPixelBufferGetWidth(self)
-        let imageHeight = CVPixelBufferGetHeight(self)
-        let pixelBufferType = CVPixelBufferGetPixelFormatType(self)
-        let inputImageRowBytes = CVPixelBufferGetBytesPerRow(self)
-        let imageChannels = 4
-        let thumbnailSize = min(imageWidth, imageHeight)
-        CVPixelBufferLockBaseAddress(self, CVPixelBufferLockFlags(rawValue: 0))
-        var originX = 0
-        var originY = 0
-        if imageWidth > imageHeight {
-            originX = (imageWidth - imageHeight) / 2
-        }
+        // Remove the alpha component from the image buffer to get the initialized `Data`.
+        guard
+          let inputData = thumbnail.rgbData(
+            isModelQuantized: inputTensor.dataType == .uInt8, imageMean: imageMean, imageStd: imageStd)
         else {
-            originY = (imageHeight - imageWidth) / 2
-        }
-        
-        //PixelBufferで最大の正方形をみつける
-        guard let inputBaseAddress = CVPixelBufferGetBaseAddress(self)?.advanced(
-            by: originY * inputImageRowBytes + originX * imageChannels) else {
+          os_log("Failed to convert the image buffer to RGB data.", type: .error)
           return nil
         }
-        
-        //入力画像から画像バッファを取得
-        var inputVImageBuffer = vImage_Buffer(
-            data: inputBaseAddress, height: UInt(thumbnailSize), width: UInt(thumbnailSize),
-            rowBytes: inputImageRowBytes)
-        let thumbnailRowBytes = Int(size.width) * imageChannels
-        guard  let thumbnailBytes = malloc(Int(size.height) * thumbnailRowBytes) else {
-          return nil
-        }
-        
-        //サムネイル画像にvImageバッファを割り当て
-        var thumbnailVImageBuffer = vImage_Buffer(data: thumbnailBytes,
-            height: UInt(size.height), width: UInt(size.width), rowBytes: thumbnailRowBytes)
-        
-        //入力画像バッファでスケール操作を実行し、サムネイル画像バッファに保存
-        let scaleError = vImageScale_ARGB8888(&inputVImageBuffer, &thumbnailVImageBuffer, nil, vImage_Flags(0))
-        CVPixelBufferUnlockBaseAddress(self, CVPixelBufferLockFlags(rawValue: 0))
-        guard scaleError == kvImageNoError else {
-            return nil
-        }
-        let releaseCallBack: CVPixelBufferReleaseBytesCallback = {mutablePointer, pointer in
-            if let pointer = pointer {
-                free(UnsafeMutableRawPointer(mutating: pointer))
-            }
-        }
-        
-        //サムネイルのvImageバッファをCVPixelBufferに変換
-        var thumbnailPixelBuffer: CVPixelBuffer?
-        let conversionStatus = CVPixelBufferCreateWithBytes(
-            nil, Int(size.width), Int(size.height), pixelBufferType, thumbnailBytes,
-            thumbnailRowBytes, releaseCallBack, nil, nil, &thumbnailPixelBuffer)
-        guard conversionStatus == kCVReturnSuccess else {
-            free(thumbnailBytes)
-            return nil
-        }
-        return thumbnailPixelBuffer
+
+        return inputData
     }
+    
+    // 結果からPersonをReturn
+    private func postprocess(imageSize: CGSize, modelOutput: Tensor) -> Person? {
+        let imageWidth = imageSize.width
+        let imageHeight = imageSize.height
+
+        let cropRegion = self.cropRegion ??
+          initialCropRegion(imageWidth: imageWidth, imageHeight: imageHeight)
+
+        let minX: CGFloat = cropRegion.left * imageWidth
+        let minY: CGFloat = cropRegion.top * imageHeight
+
+        let output = modelOutput.data.toArray(type: Float32.self)
+        let dimensions = modelOutput.shape.dimensions
+        let numKeyPoints = dimensions[2]
+        let inputWidth = CGFloat(inputTensor.shape.dimensions[1])
+        let inputHeight = CGFloat(inputTensor.shape.dimensions[2])
+
+        let widthRatio = (cropRegion.width * imageWidth / inputWidth)
+        let heightRatio = (cropRegion.height * imageHeight / inputHeight)
+
+        // Translate the coordinates from the model output's [0..1] back to that of
+        // the input image
+        var positions: [CGFloat] = []
+        var totalScoreSum: Float32 = 0
+        var keyPoints: [KeyPoint] = []
+        for idx in 0..<numKeyPoints {
+          let x = ((CGFloat(output[idx * 3 + 1]) * inputWidth) * widthRatio) + minX
+          let y = ((CGFloat(output[idx * 3 + 0]) * inputHeight) * heightRatio) + minY
+          positions.append(x)
+          positions.append(y)
+          let score = output[idx * 3 + 2]
+          totalScoreSum += score
+          let keyPoint = KeyPoint(
+            bodyPart: BodyPart.allCases[idx], coordinate: CGPoint(x: x, y: y), score: score)
+          keyPoints.append(keyPoint)
+        }
+
+        // Calculate the crop region for the subsequent frame.
+        self.cropRegion = nextFrameCropRegion(
+          keyPoints: keyPoints, imageWidth: imageWidth, imageHeight: imageHeight)
+
+        // Calculates total confidence score of each key position.
+        let totalScore = totalScoreSum / Float32(numKeyPoints)
+
+        // Make `Person` from `keypoints'. Each point is adjusted to the coordinate of the input image.
+        return Person(keyPoints: keyPoints, score: totalScore)
+    }
+    
+    /// MARK: MoveNet's smart cropping logic
+    /// Determines the region to crop the image for the model to run inference on.
+    /// The algorithm uses the detected joints from the previous frame to estimate
+    /// the square region that encloses the full body of the target person and
+    /// centers at the midpoint of two hip joints. The crop size is determined by
+    /// the distances between each joints and the center point.
+    /// When the model is not confident with the four torso joint predictions, the
+    /// function returns a default crop which is the full image padded to square.
+    private func nextFrameCropRegion(keyPoints: [KeyPoint], imageWidth: CGFloat, imageHeight: CGFloat) -> RectF {
+        let targetKeyPoints = keyPoints.map { keyPoint in
+            KeyPoint.init(bodyPart: keyPoint.bodyPart,
+                          coordinate: CGPoint(x: keyPoint.coordinate.x, y: keyPoint.coordinate.y),
+                          score: keyPoint.score)
+        }
+        if torsoVisible(keyPoints) {
+          let centerX =
+            (targetKeyPoints[BodyPart.leftHip.position].coordinate.x
+              + targetKeyPoints[BodyPart.rightHip.position].coordinate.x) / 2.0
+          let centerY =
+            (targetKeyPoints[BodyPart.leftHip.position].coordinate.y
+              + targetKeyPoints[BodyPart.rightHip.position].coordinate.y) / 2.0
+
+          let torsoAndBodyDistances =
+            determineTorsoAndBodyDistances(
+              keyPoints: keyPoints, targetKeyPoints: targetKeyPoints, centerX: centerX, centerY: centerY
+            )
+
+          let list = [
+            torsoAndBodyDistances.maxTorsoXDistance * CGFloat(torsoExpansionRatio),
+            torsoAndBodyDistances.maxTorsoYDistance * CGFloat(torsoExpansionRatio),
+            torsoAndBodyDistances.maxBodyXDistance * CGFloat(bodyExpandsionRatio),
+            torsoAndBodyDistances.maxBodyYDistance * CGFloat(bodyExpandsionRatio),
+          ]
+
+          var cropLengthHalf = list.max() ?? 0.0
+          let tmp: [CGFloat] = [
+            centerX, CGFloat(imageWidth) - centerX, centerY, CGFloat(imageHeight) - centerY,
+          ]
+          cropLengthHalf = min(cropLengthHalf, tmp.max() ?? 0.0)
+          let cropCornerY = centerY - cropLengthHalf
+          let cropCornerX = centerX - cropLengthHalf
+          if cropLengthHalf > (CGFloat(max(imageWidth, imageHeight)) / 2.0) {
+            return initialCropRegion(imageWidth: imageWidth, imageHeight: imageHeight)
+          } else {
+            let cropLength = cropLengthHalf * 2
+            return RectF(
+              left: max(cropCornerX, 0) / imageWidth,
+              top: max(cropCornerY, 0) / imageHeight,
+              right: min((cropCornerX + cropLength) / imageWidth, 1),
+              bottom: min((cropCornerY + cropLength) / imageHeight, 1))
+          }
+        } else {
+          return initialCropRegion(imageWidth: imageWidth, imageHeight: imageHeight)
+        }
+    }
+    
+    /// Defines the default crop region.
+    /// The function provides the initial crop region (pads the full image from both
+    /// sides to make it a square image) when the algorithm cannot reliably determine
+    /// the crop region from the previous frame.
+    private func initialCropRegion(imageWidth: CGFloat, imageHeight: CGFloat) -> RectF {
+        var xMin: CGFloat
+        var yMin: CGFloat
+        var width: CGFloat
+        var height: CGFloat
+        if imageWidth > imageHeight {
+          height = 1
+          width = imageHeight / imageWidth
+          yMin = 0
+          xMin = ((imageWidth - imageHeight) / 2.0) / imageWidth
+        } else {
+          width = 1
+          height = imageWidth / imageHeight
+          xMin = 0
+          yMin = ((imageHeight - imageWidth) / 2.0) / imageHeight
+        }
+        return RectF(left: xMin, top: yMin, right: xMin + width, bottom: yMin + height)
+    }
+    
+    /// Checks whether there are enough torso keypoints.
+    /// This function checks whether the model is confident at predicting one of the
+    /// shoulders/hips which is required to determine a good crop region.
+    private func torsoVisible(_ keyPoints: [KeyPoint]) -> Bool {
+        return
+          ((keyPoints[BodyPart.leftHip.position].score > minCropKeyPointScore
+          || keyPoints[BodyPart.rightHip.position].score > minCropKeyPointScore))
+          && ((keyPoints[BodyPart.leftShoulder.position].score > minCropKeyPointScore
+            || keyPoints[BodyPart.rightShoulder.position].score > minCropKeyPointScore))
+    }
+
+    /// Calculates the maximum distance from each keypoints to the center location.
+    /// The function returns the maximum distances from the two sets of keypoints:
+    /// full 17 keypoints and 4 torso keypoints. The returned information will be
+    /// used to determine the crop size. See determineRectF for more detail.
+    private func determineTorsoAndBodyDistances(
+        keyPoints: [KeyPoint], targetKeyPoints: [KeyPoint], centerX: CGFloat, centerY: CGFloat) -> TorsoAndBodyDistance {
+        let torsoJoints = [
+          BodyPart.leftShoulder.position,
+          BodyPart.rightShoulder.position,
+          BodyPart.leftHip.position,
+          BodyPart.rightHip.position,
+        ]
+
+        let maxTorsoYRange = torsoJoints.lazy.map { abs(centerY - targetKeyPoints[$0].coordinate.y) }
+          .max() ?? 0.0
+        let maxTorsoXRange = torsoJoints.lazy.map { abs(centerX - targetKeyPoints[$0].coordinate.x) }
+          .max() ?? 0.0
+
+        let confidentKeypoints = keyPoints.lazy.filter( {$0.score < self.minCropKeyPointScore} )
+        let maxBodyYRange = confidentKeypoints.map({ abs(centerY - $0.coordinate.y) }).max() ?? 0.0
+        let maxBodyXRange = confidentKeypoints.map({ abs(centerX - $0.coordinate.x) }).max() ?? 0.0
+
+        return TorsoAndBodyDistance(
+          maxTorsoYDistance: maxTorsoYRange,
+          maxTorsoXDistance: maxTorsoXRange,
+          maxBodyYDistance: maxBodyYRange,
+          maxBodyXDistance: maxBodyXRange)
+    }
+    
 }
 
-extension Data {
-   //float配列→byte配列(長さ4倍)
-   init<T>(copyingBufferOf array: [T]) {
-       self = array.withUnsafeBufferPointer(Data.init)
-   }
+/// Size of a detected person.
+struct TorsoAndBodyDistance {
+    var maxTorsoYDistance: CGFloat
+    var maxTorsoXDistance: CGFloat
+    var maxBodyYDistance: CGFloat
+    var maxBodyXDistance: CGFloat
 }
 
-extension Array {
-   //byte配列→float配列（長さ1/4倍）
-   init?(unsafeData: Data) {
-       guard unsafeData.count % MemoryLayout<Element>.stride == 0 else { return nil }
-       #if swift(>=5.0)
-       self = unsafeData.withUnsafeBytes { .init($0.bindMemory(to: Element.self)) }
-       #else
-       self = unsafeData.withUnsafeBytes {
-           .init(UnsafeBufferPointer<Element>(
-               start: $0,
-               count: unsafeData.count / MemoryLayout<Element>.stride
-           ))
-       }
-       #endif  // swift(>=5.0)
-   }
+/// A rectangle with calculated properties for convenient access.
+struct RectF {
+    var left: CGFloat
+    var top: CGFloat
+    var right: CGFloat
+    var bottom: CGFloat
+    var width: CGFloat { right - left }
+    var height: CGFloat { bottom - top }
+
+    var rect: CGRect { .init(x: left, y: top, width: width, height: height) }
 }

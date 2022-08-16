@@ -36,7 +36,7 @@ Future<Uint8List> createOutputImage(List? keyPoints, ui.Image image) async {
   // 画像描画
   canvas.drawImage(image, Offset.zero, paint);
 
-  if (keyPoints != null) {
+  if (keyPoints!.isNotEmpty) {
     // Painterを用意
     final paintCircle = Paint()
       ..strokeWidth = 6

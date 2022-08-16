@@ -220,6 +220,7 @@ class MoveNet(private val interpreter: Interpreter) {
         )
     }
 
+    // 推論の効率を良くするために、大体の人のサイズでクロップする
     /**
      * Checks whether there are enough torso keypoints.
      * This function checks whether the model is confident at predicting one of the

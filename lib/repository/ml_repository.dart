@@ -57,8 +57,12 @@ class MlRepository {
     // try-catchはなぜかループが一回多く回ってしまうことに対処するため
     try {
       for (String imagePath in pathNameList) {
+        // 開始処理
         Stopwatch stopwatch = Stopwatch();
         stopwatch.start();
+        nowCount++;
+        double percent = nowCount / maxCount;
+
         // ネイティブから関節角度を取得
         Uint8List imageBytes = File(imagePath).readAsBytesSync();
         Map map = await channel.invokeMethod('process', imageBytes);
@@ -76,8 +80,6 @@ class MlRepository {
         file.writeAsBytesSync(outputImage);
 
         // 後処理と次に向けた処理
-        nowCount++;
-        double percent = nowCount / maxCount;
         if (!ref.watch(progressValProvider).isDeterminate) {
           ref.read(progressValProvider.notifier).setIsDeterminate(true);
         }
@@ -90,6 +92,7 @@ class MlRepository {
     } catch (e) {
       print(e);
     }
+    print('$nowCount枚の画像を推論しました');
     // 終了処理
     channel.invokeMethod('close');
     ref.read(progressValProvider.notifier).setIsDeterminate(false);

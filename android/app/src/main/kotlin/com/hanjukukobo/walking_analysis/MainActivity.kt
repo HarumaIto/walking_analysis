@@ -45,6 +45,7 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun processImage(bytes: ByteArray): HashMap<String, Any> {
+        // 画像と変数の初期化
         val bitmap: Bitmap? = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
         val persons = mutableListOf<Person>()
@@ -52,9 +53,12 @@ class MainActivity: FlutterActivity() {
         val keyPoints = mutableListOf<MutableList<Float>>()
 
         if (bitmap != null) {
+            // TensorFlowLiteで推論
             moveNet!!.estimatePoses(bitmap).let {
+                // personの配列を取得
                 persons.addAll(it)
 
+                // 関節角度を求める際に必要なKeyPointを取得
                 val person = persons[0]
                 val leftHip = person.keyPoints[BodyPart.LEFT_HIP.position]
                 val leftKnee = person.keyPoints[BodyPart.LEFT_KNEE.position]
@@ -63,72 +67,27 @@ class MainActivity: FlutterActivity() {
                 val rightKnee = person.keyPoints[BodyPart.RIGHT_KNEE.position]
                 val rightAnkle = person.keyPoints[BodyPart.RIGHT_ANKLE.position]
 
+                // 関節角度を取得しReturnする配列に格納
                 val leftKneeAngle = getArticularAngle(leftHip, leftKnee, leftAnkle)
                 val rightKneeAngle = getArticularAngle(rightHip, rightKnee, rightAnkle)
+                angleList.add(leftKneeAngle)
+                angleList.add(rightKneeAngle)
 
+                // すべてのKeyPointを取得
                 person.keyPoints.forEach { keyPoint ->
                     keyPoints.add(mutableListOf(keyPoint.coordinate.x, keyPoint.coordinate.y))
                 }
-
-                angleList.add(leftKneeAngle)
-                angleList.add(rightKneeAngle)
             }
 
-            val outputBitmap = visualize(persons, bitmap)
-
-            val baos = ByteArrayOutputStream()
-            outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-            val outputBytes: ByteArray = baos.toByteArray()
-
+            // Map形式でFlutterにReturn
             return hashMapOf(
                 "angleList" to angleList,
                 "keyPoint" to keyPoints
             )
         } else {
+            // うまくBitmapが処理できなかった場合はからMapでReturn
             return hashMapOf()
         }
-    }
-
-    private fun visualize(persons: List<Person>, bitmap: Bitmap) : Bitmap {
-        /** Threshold for confidence score. */
-        val minConfidence = .2f
-
-        val resultBitmap: Bitmap =
-                Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-
-        val outputBitmap = VisualizationUtils.drawBodyKeyPoints(
-                bitmap,
-                persons.filter { it.score > minConfidence }
-        )
-
-        val canvas = Canvas(resultBitmap)
-
-        val screenWidth: Int
-        val screenHeight: Int
-        val left: Int
-        val top: Int
-
-        if (canvas.height > canvas.width) {
-            val ratio = outputBitmap.height.toFloat() / outputBitmap.width
-            screenWidth = canvas.width
-            left = 0
-            screenHeight = (canvas.width * ratio).toInt()
-            top = (canvas.height - screenHeight) / 2
-        } else {
-            val ratio = outputBitmap.width.toFloat() / outputBitmap.height
-            screenHeight = canvas.height
-            top = 0
-            screenWidth = (canvas.height * ratio).toInt()
-            left = (canvas.width - screenWidth) / 2
-        }
-        val right: Int = left + screenWidth
-        val bottom: Int = top + screenHeight
-
-        canvas.drawBitmap(
-                outputBitmap, Rect(0, 0, outputBitmap.width, outputBitmap.height),
-                Rect(left, top, right, bottom), null)
-
-        return resultBitmap
     }
 
     /// 姿勢推定の結果から関節角度を計算する
