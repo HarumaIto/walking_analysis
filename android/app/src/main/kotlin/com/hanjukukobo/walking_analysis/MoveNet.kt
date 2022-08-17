@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.Log
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
@@ -71,8 +72,18 @@ class MoveNet(private val interpreter: Interpreter) {
 
         // allow specifying model type.
         fun create(context: Context, model: Int): MoveNet {
-            val options = Interpreter.Options()
-            options.setNumThreads(CPU_NUM_THREADS)
+            val compatList = CompatibilityList()
+            val options = Interpreter.Options().apply {
+                if (compatList.isDelegateSupportedOnThisDevice) {
+                    // もしこのデバイスがGPUをサポートしていたらGPUDelegateを使用する
+                    val delegateOption = CompatibilityList().bestOptionsForThisDevice
+                    this.addDelegate(GpuDelegate(delegateOption))
+                    Log.i("native", "use gpu delegate")
+                } else {
+                    this.setNumThreads(CPU_NUM_THREADS)
+                    Log.i("native", "use cpu")
+                }
+            }
 
             val useModel = if(model == 0) THUNDER_FILENAME else LIGHTNING_FILENAME
 
