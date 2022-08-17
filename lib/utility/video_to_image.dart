@@ -58,7 +58,7 @@ class VideoToImage {
       List pathNameList = [];
 
       //画像の保存先をリストに追加
-      for (int i = 1; i < frameNumber + 1; i++) {
+      for (int i = 1; i <= frameNumber; i++) {
         String pathName =
             '$path/${formattedDate}output${i.toString().padLeft(4, "0")}.png';
         pathNameList.add(pathName);

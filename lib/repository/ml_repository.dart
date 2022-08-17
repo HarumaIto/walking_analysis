@@ -51,7 +51,6 @@ class MlRepository {
     List<List<dynamic>> angleLists = [];
 
     final int maxCount = pathNameList.length;
-    print(maxCount);
     int nowCount = 0;
     // 分割した画像の枚数分ループ
     // try-catchはなぜかループが一回多く回ってしまうことに対処するため
@@ -92,7 +91,6 @@ class MlRepository {
     } catch (e) {
       print(e);
     }
-    print('$nowCount枚の画像を推論しました');
     // 終了処理
     channel.invokeMethod('close');
     ref.read(progressValProvider.notifier).setIsDeterminate(false);

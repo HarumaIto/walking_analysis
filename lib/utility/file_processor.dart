@@ -35,7 +35,7 @@ Future<String> getTemporaryDirectoryPath() async {
   var tempDirPath = tmpDir.path;
   final localPath = '$tempDirPath/local';
   await Directory(localPath).create(recursive: true);
-  return '${tmpDir.path}/local';
+  return localPath;
 }
 
 /// 撮影した動画を写真またはギャラリーへ保存
@@ -65,8 +65,7 @@ void deleteCache() async {
   // ディレクトリ削除
   Directory directory = await getTemporaryDirectory();
   Directory localDir = Directory('${directory.path}/local');
-  int length = localDir.listSync(followLinks: false).length;
-  print('$length個のファイルを削除しました');
+  int length = localDir.listSync(followLinks: false ).length;
   Directory(localDir.path).delete(recursive: true).then((value) =>
       showToast('$length個の一時的ファイルを削除しました')
   );

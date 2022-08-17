@@ -149,6 +149,7 @@ class MoveNet(private val interpreter: Interpreter) {
                     totalScore += score
                 }
             }
+
             val matrix = Matrix()
             val points = positions.toFloatArray()
 
