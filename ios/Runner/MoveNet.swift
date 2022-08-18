@@ -96,8 +96,12 @@ class MoveNet {
         var options = Interpreter.Options()
         options.threadCount = 4
 
+        var delegates: [Delegate]?
+        /*
+        バグでうまく使えない
         // gpuDelegateを使用
-        var delegates: [Delegate] = [MetalDelegate()]
+        delegates = [MetalDelegate()]
+        */
         
         do {
             // Interpreterを初期化
