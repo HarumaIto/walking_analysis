@@ -57,6 +57,7 @@ dependencies:
   vector_math: ^2.1.2
   ffmpeg_kit_flutter: 4.5.1-LTS
   analyzer_plugin: ^0.11.1
+  tflite: ^1.1.2
 
 flutter_icons:
   android: "launcher_icon"
