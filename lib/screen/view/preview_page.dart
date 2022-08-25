@@ -1,16 +1,11 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui' as ui;
-import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:tflite_maven/tflite.dart';
 import 'package:walking_analysis/model/global_variable.dart';
 
 import 'dart:math' as math;
-import 'package:image/image.dart' as imglib;
-import 'package:walking_analysis/utility/image_utils.dart';
 
 import '../../repository/permission_repository.dart';
 import '../../utility/visualize_ml.dart';
@@ -26,8 +21,6 @@ class PreviewPageState extends State<PreviewPage> {
   CameraDescription? _camera;
   CameraController? _controller;
   Widget? imageWidget;
-
-  static const MethodChannel channel = MethodChannel('walking_analysis/ml');
 
   final stopWatch = Stopwatch();
   String timeMs = '';
@@ -78,13 +71,19 @@ class PreviewPageState extends State<PreviewPage> {
     }
   }
 
+  void loadModel() {
+    Tflite.loadModel(
+      model: "assets/posenet.tflite",
+      numThreads: 4,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _initializeCamera();
 
-    // 機械学習処理を初期化
-    channel.invokeMethod("create", 1);
+    loadModel();
   }
 
   @override
@@ -92,7 +91,8 @@ class PreviewPageState extends State<PreviewPage> {
     if (_isStreaming) _stop();
     // ウィジェットが破棄されたら、コントローラーを破棄
     _controller!.dispose();
-    channel.invokeMethod('close');
+
+    Tflite.close();
     super.dispose();
   }
 
@@ -166,27 +166,32 @@ class PreviewPageState extends State<PreviewPage> {
 
     stopWatch.start();
 
-    // 入力画像処理
-    imglib.Image image = ImageUtils.convertCameraImage(cameraImage)!;
-    if (Platform.isAndroid) {
-      image = imglib.copyRotate(image, 90);
-    }
-    List<int> jpgImage = imglib.encodeJpg(image);
-    Uint8List imageBytes = Uint8List.fromList(jpgImage);
-    stopWatch.stop();
-    print(stopWatch.elapsedMilliseconds);
-    stopWatch.start();
+    var recognitions = await Tflite.runPoseNetOnFrame(
+      bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
+      imageWidth: cameraImage.width,
+      imageHeight: cameraImage.height
+    );
 
-    // ポーズ推定
-    // ネイティブからkeyPointを取得
-    Map map = await PreviewPageState.channel.invokeMethod('process', imageBytes);
-    final List? keyPoints = map['keyPoint'];
+    final List keyPoints = [];
+    final widthRatio = cameraImage.width / 125;
+    final heightRatio = cameraImage.height / 125;
+    if (recognitions!.isNotEmpty) {
+      final Map person = recognitions[0];
+      for (int i=0; i<person["keypoints"].length; i++) {
+        var keyPoint = person["keypoints"][i];
+        var row = [];
+        row.add((keyPoint["x"] * 125) * widthRatio);
+        row.add((keyPoint["y"] * 125) * heightRatio);
+        keyPoints.add(row);
+      }
+      print(keyPoints);
+    }
 
     // image library -> uiImage
-    ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
-    ui.FrameInfo frameInfo = await codec.getNextFrame();
-    final uiImage = frameInfo.image;
-    final outputImage = await createOutputImage(keyPoints, uiImage);
+    //ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
+    //ui.FrameInfo frameInfo = await codec.getNextFrame();
+    //final uiImage = frameInfo.image;
+    final outputImage = await createOutputImage(keyPoints: keyPoints);
 
     stopWatch.stop();
     if (mounted) {

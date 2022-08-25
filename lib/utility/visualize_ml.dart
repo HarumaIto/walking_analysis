@@ -27,14 +27,16 @@ final bodyJoints = [
 ];
 
 // 元画像と機械学習の結果を合成して書き換える
-Future<Uint8List> createOutputImage(List? keyPoints, ui.Image image) async {
+Future<Uint8List> createOutputImage({required List? keyPoints, ui.Image? image}) async {
   // canvasの用意
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
   final paint = Paint()..isAntiAlias = true;
 
   // 画像描画
-  canvas.drawImage(image, Offset.zero, paint);
+  if (image != null) {
+    canvas.drawImage(image, Offset.zero, paint);
+  }
 
   if (keyPoints!.isNotEmpty) {
     // Painterを用意
@@ -61,7 +63,9 @@ Future<Uint8List> createOutputImage(List? keyPoints, ui.Image image) async {
 
   // canvasからエンコード
   final picture = recorder.endRecording();
-  final ui.Image resultImage = await picture.toImage(image.width, image.height);
+  final ui.Image resultImage = image != null
+      ? await picture.toImage(image.width, image.height)
+      : await picture.toImage(720, 1280);
 
   // 画像を生成
   final pngBytes = await resultImage.toByteData(format: ui.ImageByteFormat.png);

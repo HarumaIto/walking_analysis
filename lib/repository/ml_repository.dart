@@ -74,7 +74,7 @@ class MlRepository {
         // ネイティブからkeyPointを取得
         final List keyPoints = map['keyPoint'];
         ui.Image image = await decodeImageFromList(imageBytes);
-        final outputImage = await createOutputImage(keyPoints, image);
+        final outputImage = await createOutputImage(keyPoints: keyPoints, image: image);
         final file = File(imagePath);
         file.writeAsBytesSync(outputImage);
 
