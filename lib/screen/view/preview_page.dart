@@ -173,6 +173,9 @@ class PreviewPageState extends State<PreviewPage> {
     }
     List<int> jpgImage = imglib.encodeJpg(image);
     Uint8List imageBytes = Uint8List.fromList(jpgImage);
+    stopWatch.stop();
+    print(stopWatch.elapsedMilliseconds);
+    stopWatch.start();
 
     // ポーズ推定
     // ネイティブからkeyPointを取得
