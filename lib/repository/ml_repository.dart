@@ -18,7 +18,7 @@ import '../utility/video_to_image.dart';
 
 class MlRepository {
   final WidgetRef ref = GlobalVar.globalRef!;
-  final MethodChannel channel = const MethodChannel('walking_analysis/ml');
+  final MethodChannel channel = const MethodChannel('walking_analysis/mlkit');
 
   double runTimeSum = 0;
 

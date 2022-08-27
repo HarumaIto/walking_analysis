@@ -1,14 +1,18 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:tflite_maven/tflite.dart';
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:walking_analysis/model/global_variable.dart';
+import 'package:walking_analysis/utility/image_utils.dart';
 
 import 'dart:math' as math;
+import 'package:image/image.dart' as img;
 
+import '../../repository/mlkit/mlkit_pose_detector.dart';
 import '../../repository/permission_repository.dart';
-import '../../utility/visualize_ml.dart';
 
 class PreviewPage extends StatefulWidget {
   const PreviewPage({Key? key}) : super(key: key);
@@ -21,6 +25,10 @@ class PreviewPageState extends State<PreviewPage> {
   CameraDescription? _camera;
   CameraController? _controller;
   Widget? imageWidget;
+  InputImage? inputImage;
+
+  // PoseDetectorのインスタンスを初期化
+  final mlKitPoseDetector = MlKitPoseDetector();
 
   final stopWatch = Stopwatch();
   String timeMs = '';
@@ -53,7 +61,6 @@ class PreviewPageState extends State<PreviewPage> {
   }
 
   void _start() {
-    imageWidget = _controller!.buildPreview();
     _controller!.startImageStream(_processCameraImage);
     _isStreaming = true;
   }
@@ -71,19 +78,10 @@ class PreviewPageState extends State<PreviewPage> {
     }
   }
 
-  void loadModel() {
-    Tflite.loadModel(
-      model: "assets/posenet.tflite",
-      numThreads: 4,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
     _initializeCamera();
-
-    loadModel();
   }
 
   @override
@@ -91,8 +89,8 @@ class PreviewPageState extends State<PreviewPage> {
     if (_isStreaming) _stop();
     // ウィジェットが破棄されたら、コントローラーを破棄
     _controller!.dispose();
+    mlKitPoseDetector.close();
 
-    Tflite.close();
     super.dispose();
   }
 
@@ -117,21 +115,22 @@ class PreviewPageState extends State<PreviewPage> {
       body: isUseCamera ? Stack(
         fit: StackFit.expand,
         children: [
-          !_isStreaming ? Align(
+          Align(
             alignment: const Alignment(0, 0),
             child: OverflowBox(
               maxWidth: maxWidth,
               maxHeight: maxHeight,
               child: CameraPreview(_controller!),
             ),
-          ) : Align(
-            alignment: const Alignment(0, 0),
-            child: OverflowBox(
-              maxWidth: maxWidth,
-              maxHeight: maxHeight,
-              child: imageWidget,
-            ),
           ),
+          _isStreaming && imageWidget != null ? Align(
+            alignment: const Alignment(0, 0),
+            child: SizedBox(
+              width: maxWidth,
+              height: maxHeight,
+              child: imageWidget
+            ),
+          ) : Container(),
           _isStreaming ? Align(
             alignment: const Alignment(-0.96, -0.98),
             child: Container(
@@ -166,42 +165,33 @@ class PreviewPageState extends State<PreviewPage> {
 
     stopWatch.start();
 
-    var recognitions = await Tflite.runPoseNetOnFrame(
-      bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
-      imageWidth: cameraImage.width,
-      imageHeight: cameraImage.height
+    Widget image = await compute(convertCameraImageToWidget, cameraImage);
+    inputImage = mlKitPoseDetector.initInputImage(cameraImage, _camera!);
+    final pose = await mlKitPoseDetector.runSingleOnFrame(inputImage!);
+    CustomPainter? customPainter;
+    if (pose != null) customPainter = mlKitPoseDetector.createPainter(inputImage!, pose);
+    CustomPaint customPaint = CustomPaint(
+      foregroundPainter: customPainter,
+      child: image,
     );
 
-    final List keyPoints = [];
-    final widthRatio = cameraImage.width / 125;
-    final heightRatio = cameraImage.height / 125;
-    if (recognitions!.isNotEmpty) {
-      final Map person = recognitions[0];
-      for (int i=0; i<person["keypoints"].length; i++) {
-        var keyPoint = person["keypoints"][i];
-        var row = [];
-        row.add((keyPoint["x"] * 125) * widthRatio);
-        row.add((keyPoint["y"] * 125) * heightRatio);
-        keyPoints.add(row);
-      }
-      print(keyPoints);
-    }
-
-    // image library -> uiImage
-    //ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
-    //ui.FrameInfo frameInfo = await codec.getNextFrame();
-    //final uiImage = frameInfo.image;
-    final outputImage = await createOutputImage(keyPoints: keyPoints);
-
-    stopWatch.stop();
     if (mounted) {
       setState(() {
+        imageWidget = customPaint;
+        stopWatch.stop();
         timeMs = '${stopWatch.elapsedMilliseconds} ms';
-        imageWidget = Image.memory(outputImage);
       });
     }
 
     stopWatch.reset();
     _isDetecting = false;
+  }
+
+  static Widget convertCameraImageToWidget(CameraImage cameraImage) {
+    img.Image image = ImageUtils.convertCameraImage(cameraImage)!;
+    image = img.copyRotate(image, 90);
+    List<int> intArray = img.encodePng(image);
+    Uint8List byteArray = Uint8List.fromList(intArray);
+    return Image.memory(byteArray);
   }
 }
