@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
@@ -62,17 +63,19 @@ class PreviewPageState extends State<PreviewPage> {
 
   void _start() {
     _controller!.startImageStream(_processCameraImage);
-    _isStreaming = true;
+    setState(() {
+      _isStreaming = true;
+    });
   }
 
   void _stop() {
-    _isStreaming = false;
     if (_controller!.value.isStreamingImages) {
       _controller!.stopImageStream();
       imageWidget = null;
     }
     if (mounted) {
       setState(() {
+        _isStreaming = false;
         timeMs = '';
       });
     }
@@ -189,7 +192,7 @@ class PreviewPageState extends State<PreviewPage> {
 
   static Widget convertCameraImageToWidget(CameraImage cameraImage) {
     img.Image image = ImageUtils.convertCameraImage(cameraImage)!;
-    image = img.copyRotate(image, 90);
+    if (Platform.isAndroid) image = img.copyRotate(image, 90);
     List<int> intArray = img.encodePng(image);
     Uint8List byteArray = Uint8List.fromList(intArray);
     return Image.memory(byteArray);
