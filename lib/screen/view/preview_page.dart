@@ -193,7 +193,8 @@ class PreviewPageState extends State<PreviewPage> {
   static Widget convertCameraImageToWidget(CameraImage cameraImage) {
     img.Image image = ImageUtils.convertCameraImage(cameraImage)!;
     if (Platform.isAndroid) image = img.copyRotate(image, 90);
-    List<int> intArray = img.encodePng(image);
+    //  List<int> intArray = img.encodePng(image);
+    List<int> intArray = img.encodeJpg(image);
     Uint8List byteArray = Uint8List.fromList(intArray);
     return Image.memory(byteArray);
   }
