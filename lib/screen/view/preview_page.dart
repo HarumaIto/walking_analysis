@@ -168,14 +168,14 @@ class PreviewPageState extends State<PreviewPage> {
 
     stopWatch.start();
 
-    Widget image = await compute(convertCameraImageToWidget, cameraImage);
+    //Widget image = await compute(convertCameraImageToWidget, cameraImage);
     inputImage = mlKitPoseDetector.initInputImage(cameraImage, _camera!);
     final pose = await mlKitPoseDetector.runSingleOnFrame(inputImage!);
     CustomPainter? customPainter;
     if (pose != null) customPainter = mlKitPoseDetector.createPainter(inputImage!, pose);
     CustomPaint customPaint = CustomPaint(
       foregroundPainter: customPainter,
-      child: image,
+      //child: image,
     );
 
     if (mounted) {
@@ -193,8 +193,7 @@ class PreviewPageState extends State<PreviewPage> {
   static Widget convertCameraImageToWidget(CameraImage cameraImage) {
     img.Image image = ImageUtils.convertCameraImage(cameraImage)!;
     if (Platform.isAndroid) image = img.copyRotate(image, 90);
-    //  List<int> intArray = img.encodePng(image);
-    List<int> intArray = img.encodeJpg(image);
+    List<int> intArray = img.encodePng(image);
     Uint8List byteArray = Uint8List.fromList(intArray);
     return Image.memory(byteArray);
   }
