@@ -120,9 +120,9 @@ class PreviewPageState extends State<PreviewPage> {
         children: [
           Align(
             alignment: const Alignment(0, 0),
-            child: OverflowBox(
-              maxWidth: maxWidth,
-              maxHeight: maxHeight,
+            child: SizedBox(
+              width: maxWidth,
+              height: maxHeight,
               child: CameraPreview(_controller!),
             ),
           ),
@@ -174,8 +174,7 @@ class PreviewPageState extends State<PreviewPage> {
     CustomPainter? customPainter;
     if (pose != null) customPainter = mlKitPoseDetector.createPainter(inputImage!, pose);
     CustomPaint customPaint = CustomPaint(
-      foregroundPainter: customPainter,
-      //child: image,
+      painter: customPainter,
     );
 
     if (mounted) {
@@ -195,6 +194,6 @@ class PreviewPageState extends State<PreviewPage> {
     if (Platform.isAndroid) image = img.copyRotate(image, 90);
     List<int> intArray = img.encodePng(image);
     Uint8List byteArray = Uint8List.fromList(intArray);
-    return Image.memory(byteArray);
+    return Image.memory(byteArray,);
   }
 }
